@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -16,27 +16,12 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>txexport</module>
         <module>eventscan</module>
-        <module>ethereum-rlp</module>
-        <module>ethereum-crypto</module>
-        <module>key-app</module>
-        <module>mywish-bot</module>
         <module>scanner</module>
-        <module>joule</module>
         <module>mywish-model</module>
         <module>mywish-events</module>
-        <module>bot-integration</module>
-        <module>neo-cli4j</module>
-        <module>eos-cli4j</module>
-        <module>tron-cli4j</module>
         <module>blockchain</module>
-        <module>blockchain-web3</module>
-        <module>blockchain-eos</module>
-        <module>blockchain-neo</module>
-        <module>blockchain-btc</module>
-        <module>blockchain-tron</module>
-        <module>mywish-airdrop</module>
+        <module>blockchain-tecra</module>
     </modules>
 
     <properties>
@@ -71,11 +56,6 @@
             <scope>provided</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
-        <!--<dependency>-->
-            <!--<groupId>org.slf4j</groupId>-->
-            <!--<artifactId>slf4j-api</artifactId>-->
-            <!--<version>1.7.25</version>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>

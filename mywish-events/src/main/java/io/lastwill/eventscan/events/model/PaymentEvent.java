@@ -1,9 +1,10 @@
 package io.lastwill.eventscan.events.model;
 
 import io.lastwill.eventscan.model.CryptoCurrency;
-import io.mywish.blockchain.WrapperTransaction;
 import io.lastwill.eventscan.model.NetworkType;
+import io.mywish.blockchain.WrapperTransaction;
 import lombok.Getter;
+
 import java.math.BigInteger;
 
 @Getter

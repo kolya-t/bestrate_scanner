@@ -12,10 +12,9 @@ import java.util.Map;
 
 @Component
 public class NetworkProvider {
+    private final Map<NetworkType, WrapperNetwork> networkByType = new HashMap<>();
     @Autowired
     private Map<String, WrapperNetwork> networkByName = new HashMap<>();
-
-    private final Map<NetworkType, WrapperNetwork> networkByType = new HashMap<>();
 
     @PostConstruct
     protected void init() {

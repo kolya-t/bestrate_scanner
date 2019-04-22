@@ -15,38 +15,36 @@ public abstract class Scanner {
 
     protected final WrapperNetwork network;
     protected final LastBlockPersister lastBlockPersister;
-
-    private Thread workerThread;
-
     protected Long nextBlockNo;
     protected long lastBlockIncrementTimestamp;
-
     @Autowired
     protected EventPublisher eventPublisher;
-
-    abstract protected void processBlock(WrapperBlock block);
+    private Thread workerThread;
 
     public Scanner(WrapperNetwork network, LastBlockPersister lastBlockPersister) {
         this.network = network;
         this.lastBlockPersister = lastBlockPersister;
     }
 
+    abstract protected void processBlock(WrapperBlock block);
+
     protected void setWorker(Runnable worker) {
         this.workerThread = new Thread(worker);
     }
 
-	@EventListener
-	private void onApplicationLoaded(ContextRefreshedEvent event) {
-		workerThread.start();
-		log.info("Subscribed to {} new block event.", network.getType());
-	}
+    @EventListener
+    private void onApplicationLoaded(ContextRefreshedEvent event) {
+        workerThread.start();
+        log.info("Subscribed to {} new block event.", network.getType());
+    }
 
-	@EventListener
-	private void onApplicationClosed(ContextClosedEvent event) {
+    @EventListener
+    private void onApplicationClosed(ContextClosedEvent event) {
         log.info("Application closed.");
         close();
     }
 
     protected abstract void open() throws Exception;
+
     protected abstract void close();
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>etherexport</artifactId>
@@ -15,17 +15,9 @@
         <db-url>jdbc:postgresql://localhost/lastwill_new</db-url>
         <db-user>lastwill_new</db-user>
         <db-password>lastwill_new</db-password>
-        <web3-base-url>http://localhost:8545/</web3-base-url>
-        <backend-base-url>http://demo.mywillplatform.io/api/v1/payment_notify</backend-base-url>
-        <token-address>0x1b22c32cd936cb97c28c5690a0695a82abf688e6</token-address>
     </properties>
 
     <dependencies>
-        <!--<dependency>-->
-            <!--<groupId>${project.groupId}</groupId>-->
-            <!--<artifactId>ethereum-rpl</artifactId>-->
-            <!--<version>${project.version}</version>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>scanner</artifactId>
@@ -43,58 +35,16 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>mywish-bot</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>blockchain</artifactId>
             <version>${project.version}</version>
         </dependency>
         <!-- Runtime -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>blockchain-btc</artifactId>
+            <artifactId>blockchain-tecra</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>blockchain-neo</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>blockchain-eos</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>blockchain-web3</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>blockchain-tron</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>bot-integration</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-
-        <!--<dependency>-->
-            <!--<groupId>${project.groupId}</groupId>-->
-            <!--<artifactId>joule</artifactId>-->
-            <!--<version>${project.version}</version>-->
-            <!--<scope>runtime</scope>-->
-        <!--</dependency>-->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
