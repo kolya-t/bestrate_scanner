@@ -1,4 +1,4 @@
-package io.lastwill.eventscan.messages;
+package io.lastwill.eventscan.messages.out;
 
 import lombok.Getter;
 

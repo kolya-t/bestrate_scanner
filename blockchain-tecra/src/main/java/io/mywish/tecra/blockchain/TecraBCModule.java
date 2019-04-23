@@ -5,6 +5,7 @@ import io.lastwill.eventscan.model.NetworkType;
 import io.lastwill.eventscan.repositories.LastBlockRepository;
 import io.mywish.scanner.services.LastBlockDbPersister;
 import io.mywish.scanner.services.LastBlockPersister;
+import io.mywish.tecra.blockchain.params.TecraMainNetParams;
 import io.mywish.tecra.blockchain.services.TecraNetwork;
 import io.mywish.tecra.blockchain.services.TecraScanner;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -23,19 +24,11 @@ import java.net.URI;
 @ComponentScan
 @Configuration
 public class TecraBCModule {
-    /**
-     * Solution for test purposes only.
-     * When we scan mainnet blocks we build addresses in mainnet format. And is not the same like testnet address.
-     * This flag is solve the issue.
-     */
-    @Value("${etherscanner.tecra.treat-testnet-as-mainnet:false}")
-    private boolean treatTestnetAsMainnet;
-
-    @ConditionalOnProperty("etherscanner.bitcoin.rpc-url.mainnet")
+    @ConditionalOnProperty("etherscanner.tecra.rpc-url.mainnet")
     @Bean(name = NetworkType.TECRA_MAINNET_VALUE)
     public TecraNetwork tecraNetMain(
             final CloseableHttpClient closeableHttpClient,
-            final @Value("${etherscanner.bitcoin.rpc-url.mainnet}") URI rpc
+            final @Value("${etherscanner.tecra.rpc-url.mainnet}") URI rpc
     ) throws Exception {
         String user = null, password = null;
         if (rpc.getUserInfo() != null) {
@@ -55,23 +48,23 @@ public class TecraBCModule {
                         user,
                         password
                 ),
-                treatTestnetAsMainnet ? new TestNet3Params() : new MainNetParams()
+                new TecraMainNetParams()
         );
     }
 
     @Bean
-    public LastBlockPersister btcMainnetLastBlockPersister(
+    public LastBlockPersister tcrMainnetLastBlockPersister(
             LastBlockRepository lastBlockRepository,
-            final @Value("${etherscanner.bitcoin.last-block.mainnet:#{null}}") Long lastBlock
+            final @Value("${etherscanner.tecra.last-block.mainnet:#{null}}") Long lastBlock
     ) {
         return new LastBlockDbPersister(NetworkType.TECRA_MAINNET, lastBlockRepository, lastBlock);
     }
 
     @ConditionalOnBean(name = NetworkType.TECRA_MAINNET_VALUE)
     @Bean
-    public TecraScanner btcScannerMain(
+    public TecraScanner tcrScannerMain(
             final @Qualifier(NetworkType.TECRA_MAINNET_VALUE) TecraNetwork network,
-            final @Qualifier("btcMainnetLastBlockPersister") LastBlockPersister lastBlockPersister,
+            final @Qualifier("tcrMainnetLastBlockPersister") LastBlockPersister lastBlockPersister,
             final @Value("${etherscanner.tecra.polling-interval-ms}") Long pollingInterval,
             final @Value("${etherscanner.tecra.commit-chain-length}") Integer commitmentChainLength
     ) {

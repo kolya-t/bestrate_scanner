@@ -4,13 +4,11 @@ import com.neemre.btcdcli4j.core.client.BtcdClient;
 import io.lastwill.eventscan.model.NetworkType;
 import io.mywish.blockchain.WrapperBlock;
 import io.mywish.blockchain.WrapperNetwork;
-import io.mywish.blockchain.WrapperTransaction;
 import io.mywish.tecra.blockchain.helper.TecraBlockParser;
 import org.bitcoinj.core.NetworkParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigInteger;
-import java.util.List;
 
 public class TecraNetwork extends WrapperNetwork {
     private final BtcdClient btcdClient;
@@ -55,16 +53,6 @@ public class TecraNetwork extends WrapperNetwork {
 
     @Override
     public BigInteger getBalance(String address, Long blockNo) {
-        throw new UnsupportedOperationException("Method not supported");
-    }
-
-    @Override
-    public boolean isPendingTransactionsSupported() {
-        return false;
-    }
-
-    @Override
-    public List<WrapperTransaction> fetchPendingTransactions() {
         throw new UnsupportedOperationException("Method not supported");
     }
 }

@@ -12,9 +12,9 @@
     <artifactId>eventscan</artifactId>
 
     <properties>
-        <db-url>jdbc:postgresql://localhost/lastwill_new</db-url>
-        <db-user>lastwill_new</db-user>
-        <db-password>lastwill_new</db-password>
+        <db-url>jdbc:postgresql://localhost/tecra</db-url>
+        <db-user>tecra</db-user>
+        <db-password>tecra</db-password>
     </properties>
 
     <dependencies>
@@ -89,6 +89,12 @@
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>3.14.1</version>
         </dependency>
 
 

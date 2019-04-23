@@ -1,4 +1,4 @@
-package io.lastwill.eventscan.services.impl;
+package io.lastwill.eventscan.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,10 +6,10 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import io.lastwill.eventscan.messages.BaseNotify;
-import io.lastwill.eventscan.messages.Ping;
+import io.lastwill.eventscan.messages.out.BaseOutMessage;
+import io.lastwill.eventscan.messages.out.Ping;
 import io.lastwill.eventscan.model.NetworkType;
-import io.lastwill.eventscan.services.ExternalNotifier;
+import io.lastwill.eventscan.repositories.SubscriptionRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,13 +24,16 @@ import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Component
-public class MQExternalNotifier implements ExternalNotifier {
+public class MQProducer {
     private final static String contentType = "application/json";
     @Autowired
     private ConnectionFactory factory;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private SubscriptionRepository subscriptionRepository;
 
     @Value("${io.lastwill.eventscan.backend-mq.queue.tecra-mainnet}")
     private String queueNameTecraMainnet;
@@ -97,15 +100,11 @@ public class MQExternalNotifier implements ExternalNotifier {
         }
     }
 
-    public void send(final NetworkType networkType, final BaseNotify notify) {
-        final String queueName = queueByNetwork.get(networkType);
-        if (queueName == null) {
-            throw new UnsupportedOperationException("Notifier does not support network " + networkType);
-        }
-        send(queueName, notify);
+    public void send(BaseOutMessage message) {
+        send(message.getSubscription().getQueueName(), message);
     }
 
-    protected synchronized void send(String queueName, BaseNotify notify) {
+    protected synchronized void send(String queueName, BaseOutMessage notify) {
         try {
             byte[] json = objectMapper.writeValueAsBytes(notify);
 

@@ -19,7 +19,7 @@ public class WrapperOutputTecraService {
         try {
             script = output.getScriptPubKey();
         } catch (ScriptException ex) {
-            log.warn("Skip output with script error: ", output, ex);
+            log.warn("Skip output with script error: {}", output, ex);
             return null;
         }
         if (!script.isSentToAddress() && !script.isPayToScriptHash() && !script.isSentToRawPubKey()) {
