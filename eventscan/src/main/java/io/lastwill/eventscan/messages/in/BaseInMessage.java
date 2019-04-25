@@ -1,9 +1,14 @@
 package io.lastwill.eventscan.messages.in;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
-@ToString
-public abstract class BaseInMessage {
+import java.util.UUID;
 
-    public abstract String getType();
+@Getter
+@ToString
+@RequiredArgsConstructor
+public abstract class BaseInMessage {
+    private final UUID id;
 }
