@@ -6,39 +6,28 @@ import io.lastwill.eventscan.model.Subscription;
 import io.lastwill.eventscan.repositories.SubscriptionRepository;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
 @Slf4j
 @Component
-public class MQConsumer {
-//    public static final String SUBSCRIBE_QUEUE_NAME = "subscribeQueue";
-//    public static final String UNSUBSCRIBE_QUEUE_NAME = "unsubscribeQueue";
-
+public class MQConsumerSubscription {
     @Autowired
     private SubscriptionRepository subscriptionRepository;
 
-//    @Autowired
-//    @Qualifier(SUBSCRIBE_QUEUE_NAME)
-//    private Queue subscribeQueue;
-//
-//    @Autowired
-//    @Qualifier(UNSUBSCRIBE_QUEUE_NAME)
-//    private Queue unsubscribeQueue;
+    @Autowired
+    private QueueBinder queueBinder;
 
     @RabbitListener(queues = "${io.lastwill.eventscan.mq.subscribe-queue.name}")
-    public void subscribe(@Payload SubscribeMessage message) {
+    public void subscribe(SubscribeMessage message) {
         subscribe(message.getId(), message.getTcrAddress(), message.getQueueName());
     }
 
     @RabbitListener(queues = "${io.lastwill.eventscan.mq.unsubscribe-queue.name}")
-    public void unsubscribe(@Payload UnsubscribeMessage message) {
+    public void unsubscribe(UnsubscribeMessage message) {
         unsubscribe(message.getId());
     }
 
@@ -55,6 +44,8 @@ public class MQConsumer {
         }
 
         subscriptionRepository.save(subscription);
+        queueBinder.add(queueName);
+        log.info("Added new subscription {}.", id);
     }
 
     @Synchronized
@@ -70,5 +61,7 @@ public class MQConsumer {
 
         subscription.setIsSubscribed(true);
         subscriptionRepository.save(subscription);
+        queueBinder.remove(subscription.getQueueName());
+        log.info("Removed subscription {}.", id);
     }
 }

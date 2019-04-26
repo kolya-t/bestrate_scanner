@@ -1,23 +1,22 @@
 package io.lastwill.eventscan.messages.out;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.lastwill.eventscan.messages.BaseMessage;
 import io.lastwill.eventscan.model.Subscription;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.UUID;
 
 @ToString
 @Getter
-@RequiredArgsConstructor
-public abstract class BaseOutMessage {
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public abstract class BaseOutMessage implements BaseMessage {
     @JsonIgnore
-    private final Subscription subscription;
+    private Subscription subscription;
 
     public UUID getId() {
         return subscription.getClientId();
     }
-
-    public abstract String getType();
 }
