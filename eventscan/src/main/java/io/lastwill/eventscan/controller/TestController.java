@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.PostConstruct;
 import java.util.UUID;
 
+// todo: remove
 @RestController
 public class TestController {
     @Autowired

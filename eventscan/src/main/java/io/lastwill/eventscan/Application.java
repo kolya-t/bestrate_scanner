@@ -23,7 +23,6 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -31,17 +30,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 
+import javax.annotation.PostConstruct;
 import java.util.UUID;
 
 @SpringBootApplication
-@Import({ScannerModule.class, EventModule.class, })
+@Import({ScannerModule.class, EventModule.class,})
 @EntityScan(basePackageClasses = {Application.class, Jsr310JpaConverters.class})
 @EnableRabbit
-public class Application implements CommandLineRunner {
+public class Application {
     public static void main(String[] args) {
         new SpringApplicationBuilder()
                 .addCommandLineProperties(true)
-//                .web(false)
+//                .web(false) // todo: remove
                 .sources(Application.class)
                 .main(Application.class)
                 .run(args);
@@ -50,8 +50,9 @@ public class Application implements CommandLineRunner {
     @Autowired
     private SubscriptionRepository subscriptionRepository;
 
-    @Override
-    public void run(String... args) {
+    // todo: remove
+    @PostConstruct
+    public void init() {
         subscriptionRepository.save(new Subscription(
                 UUID.randomUUID(), "TAsqU3tKzrXrmJfsARxRRGAHhcFCNAhVLk", "hello", true));
     }
