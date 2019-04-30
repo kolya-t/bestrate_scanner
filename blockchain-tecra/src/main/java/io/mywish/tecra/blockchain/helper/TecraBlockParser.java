@@ -1,17 +1,20 @@
 package io.mywish.tecra.blockchain.helper;
 
+import com.neemre.btcdcli4j.core.BitcoindException;
+import com.neemre.btcdcli4j.core.CommunicationException;
+import com.neemre.btcdcli4j.core.client.BtcdClient;
 import lombok.extern.slf4j.Slf4j;
 import org.bitcoinj.core.*;
-import org.springframework.stereotype.Component;
 
 import javax.xml.bind.DatatypeConverter;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
-@Component
+//@Component
 public class TecraBlockParser {
     private final static long LONG_MASK = 0xffffffffL;
     private final static long MAX_TRANSACTIONS_COUNT = 0x7fff;
@@ -19,7 +22,13 @@ public class TecraBlockParser {
     private final static long MAX_SCRIPT_SIZE = 10000;
     private final static long MAX_COINBASE_SCRIPT_SIZE = 100;
 
-    private static List<Transaction> readTransactions(NetworkParameters parameters, long txCount, ByteBuffer buffer) {
+    private final BtcdClient btcdClient;
+
+    public TecraBlockParser(BtcdClient btcdClient) {
+        this.btcdClient = btcdClient;
+    }
+
+    private List<Transaction> readTransactions(NetworkParameters parameters, long txCount, ByteBuffer buffer) {
         if (txCount > MAX_TRANSACTIONS_COUNT) {
             throw new ArrayIndexOutOfBoundsException("Transactions count is too big: " + txCount + " > " + MAX_TRANSACTIONS_COUNT);
         }
@@ -32,10 +41,40 @@ public class TecraBlockParser {
             }
             result.add(transaction);
         }
+
+        Map<Sha256Hash, Transaction> collect = result.parallelStream()
+                .skip(1)
+                .map(Transaction::getInputs)
+                .flatMap(Collection::stream)
+                .map(TransactionInput::getOutpoint)
+                .map(TransactionOutPoint::getHash)
+                .map(Sha256Hash::toString)
+                .distinct()
+                .map(hash -> {
+                    try {
+                        return btcdClient.getRawTransaction(hash);
+                    } catch (BitcoindException | CommunicationException e) {
+                        log.warn("Error getting connected transactions for {}.", hash, e);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .map(DatatypeConverter::parseHexBinary)
+                .map(ByteBuffer::wrap)
+                .map(byteBuffer -> byteBuffer.order(ByteOrder.LITTLE_ENDIAN))
+                .map(byteBuffer -> readTransaction(parameters, byteBuffer, false))
+                .collect(Collectors.toMap(Transaction::getHash, Function.identity()));
+
+        for (Transaction transaction : result) {
+            for (TransactionInput input : transaction.getInputs()) {
+                input.connect(collect, TransactionInput.ConnectMode.DISCONNECT_ON_CONFLICT);
+            }
+        }
+
         return result;
     }
 
-    private static TransactionInput readInput(NetworkParameters parameters, ByteBuffer buffer, boolean isCoinbase) {
+    private TransactionInput readInput(NetworkParameters parameters, ByteBuffer buffer, boolean isCoinbase) {
         TransactionOutPoint outPoint = readOutPoint(parameters, buffer);
         long scriptSize = readVarInt(buffer);
         boolean skipScript = false;
@@ -58,7 +97,7 @@ public class TecraBlockParser {
         return skipScript ? null : input;
     }
 
-    private static Transaction readTransaction(NetworkParameters parameters, ByteBuffer buffer, boolean isCoinbase) {
+    private Transaction readTransaction(NetworkParameters parameters, ByteBuffer buffer, boolean isCoinbase) {
         Transaction transaction = new Transaction(parameters);
 
         long txVersion = buffer.getInt() & LONG_MASK;
@@ -109,7 +148,7 @@ public class TecraBlockParser {
         return skipTransaction ? null : transaction;
     }
 
-    private static byte[][] readWitnesses(NetworkParameters parameters, ByteBuffer buffer) {
+    private byte[][] readWitnesses(NetworkParameters parameters, ByteBuffer buffer) {
         long witnessesCount = readVarInt(buffer);
         if (witnessesCount > MAX_TRANSACTIONS_COUNT) {
             throw new ArrayIndexOutOfBoundsException("Witnesses count is too big: " + witnessesCount + " > " + MAX_TRANSACTIONS_COUNT);
@@ -130,7 +169,7 @@ public class TecraBlockParser {
         return witnessesData;
     }
 
-    private static TransactionOutput readOutput(NetworkParameters parameters, ByteBuffer buffer) {
+    private TransactionOutput readOutput(NetworkParameters parameters, ByteBuffer buffer) {
         long value = buffer.getLong();
         long scriptSize = readVarInt(buffer);
         if (scriptSize > MAX_SCRIPT_SIZE) {
@@ -151,7 +190,7 @@ public class TecraBlockParser {
         return new TransactionOutPoint(parameters, index, Sha256Hash.wrapReversed(hash));
     }
 
-    private static long readVarInt(ByteBuffer buffer) {
+    private long readVarInt(ByteBuffer buffer) {
         int b = buffer.get() & 0xFF;
         if (b < 0xFD) {
             return b;

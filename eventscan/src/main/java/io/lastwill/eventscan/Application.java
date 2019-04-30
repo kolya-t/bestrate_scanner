@@ -53,6 +53,7 @@ public class Application {
     // todo: remove
     @PostConstruct
     public void init() {
+        subscriptionRepository.deleteAll();
         subscriptionRepository.save(new Subscription(
                 UUID.randomUUID(), "TAsqU3tKzrXrmJfsARxRRGAHhcFCNAhVLk", "hello", true));
     }

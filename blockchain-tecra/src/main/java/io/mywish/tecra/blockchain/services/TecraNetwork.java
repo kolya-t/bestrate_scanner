@@ -13,17 +13,16 @@ import java.math.BigInteger;
 public class TecraNetwork extends WrapperNetwork {
     private final BtcdClient btcdClient;
     private final NetworkParameters networkParameters;
+    private final TecraBlockParser tecraBlockParser;
 
     @Autowired
     private WrapperBlockTecraService blockBuilder;
-
-    @Autowired
-    private TecraBlockParser tecraBlockParser;
 
     public TecraNetwork(NetworkType type, BtcdClient btcdClient, NetworkParameters networkParameters) {
         super(type);
         this.btcdClient = btcdClient;
         this.networkParameters = networkParameters;
+        this.tecraBlockParser = new TecraBlockParser(btcdClient);
     }
 
     @Override
