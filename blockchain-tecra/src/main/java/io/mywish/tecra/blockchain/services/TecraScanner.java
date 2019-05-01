@@ -10,6 +10,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
 
 import java.util.HashMap;
+import java.util.List;
 
 @Slf4j
 public class TecraScanner extends ScannerPolling {
@@ -29,12 +30,17 @@ public class TecraScanner extends ScannerPolling {
         }
         block.getTransactions()
                 .forEach(transaction -> {
-                    transaction.getOutputs().forEach(output -> {
-                        addressTransactions.add(
-                                output.getAddress(),
-                                transaction
-                        );
+                    transaction.getInputs().forEach(input -> {
+                        String key = input.getAddress();
+                        List<WrapperTransaction> values = addressTransactions.get(key);
+                        if (values == null || !values.contains(transaction)) {
+                            addressTransactions.add(key, transaction);
+                        }
                     });
+                    transaction.getOutputs().forEach(output -> addressTransactions.add(
+                            output.getAddress(),
+                            transaction
+                    ));
                 });
 
         eventPublisher.publish(new NewBlockEvent(network.getType(), block, addressTransactions));

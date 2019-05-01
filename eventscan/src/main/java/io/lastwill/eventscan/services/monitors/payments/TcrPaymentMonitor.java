@@ -4,6 +4,7 @@ import io.lastwill.eventscan.events.model.SubscriptionPaymentEvent;
 import io.lastwill.eventscan.model.CryptoCurrency;
 import io.lastwill.eventscan.model.NetworkType;
 import io.lastwill.eventscan.repositories.SubscriptionRepository;
+import io.mywish.blockchain.WrapperInput;
 import io.mywish.blockchain.WrapperOutput;
 import io.mywish.blockchain.WrapperTransaction;
 import io.mywish.scanner.model.NewBlockEvent;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Set;
 
@@ -59,6 +61,30 @@ public class TcrPaymentMonitor {
                                     event.getNetworkType(),
                                     tx,
                                     output.getValue(),
+                                    CryptoCurrency.TCR,
+                                    subscription,
+                                    true
+                            ));
+                        }
+
+                        BigInteger sentValue = BigInteger.ZERO;
+                        for (WrapperInput input : tx.getInputs()) {
+                            if (input.getParentTransaction() == null) {
+                                log.warn("Skip it. Input {} has not parent transaction.", input);
+                                continue;
+                            }
+                            if (!input.getAddress().equalsIgnoreCase(subscription.getTcrAddress())) {
+                                continue;
+                            }
+
+                            sentValue = sentValue.add(input.getValue());
+                        }
+
+                        if (!sentValue.equals(BigInteger.ZERO)) {
+                            eventPublisher.publish(new SubscriptionPaymentEvent(
+                                    event.getNetworkType(),
+                                    tx,
+                                    sentValue.negate(),
                                     CryptoCurrency.TCR,
                                     subscription,
                                     true
