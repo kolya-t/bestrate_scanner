@@ -12,6 +12,7 @@ public class NetworkStuckEvent extends BaseEvent {
     private final LocalDateTime receivedTime;
     private final Instant lastTimestamp;
     private final long lastBlockNo;
+
     public NetworkStuckEvent(NetworkType networkType, LocalDateTime receivedTime, Instant lastTimestamp, long lastBlockNo) {
         super(networkType);
         this.receivedTime = receivedTime;

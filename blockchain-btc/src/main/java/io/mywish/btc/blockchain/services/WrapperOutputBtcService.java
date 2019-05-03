@@ -18,9 +18,8 @@ public class WrapperOutputBtcService {
         Script script;
         try {
             script = output.getScriptPubKey();
-        }
-        catch (ScriptException ex) {
-            log.warn("Skip output with script error: ", output, ex);
+        } catch (ScriptException ex) {
+            log.warn("Skip output with script error: {}", output, ex);
             return null;
         }
         if (!script.isSentToAddress() && !script.isPayToScriptHash() && !script.isSentToRawPubKey()) {
@@ -34,8 +33,7 @@ public class WrapperOutputBtcService {
                     .getToAddress(networkParameters, true)
                     .toBase58();
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Impossible to convert script {} to address.", output.getScriptPubKey(), e);
             return null;
         }

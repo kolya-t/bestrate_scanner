@@ -9,7 +9,6 @@ import io.mywish.eos.blockchain.services.EosScanner;
 import io.mywish.eos.blockchain.services.EosScannerPolling;
 import io.mywish.eoscli4j.service.EosClientImpl;
 import io.mywish.scanner.services.LastBlockDbPersister;
-import io.mywish.scanner.services.LastBlockFilePersister;
 import io.mywish.scanner.services.LastBlockMemoryPersister;
 import io.mywish.scanner.services.LastBlockPersister;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -18,7 +17,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 import java.net.URI;
 
@@ -64,44 +66,20 @@ public class EosBCModule {
         );
     }
 
-    @Configuration
-    @ConditionalOnProperty("etherscanner.eos.db-persister")
-    public static class DbPersisterConfiguration {
-        @Bean
-        public LastBlockPersister eosMainnetLastBlockPersister(
-                LastBlockRepository lastBlockRepository,
-                final @Value("${etherscanner.eos.last-block.mainnet:#{null}}") Long lastBlock
-        ) {
-            return new LastBlockDbPersister(NetworkType.EOS_MAINNET, lastBlockRepository, lastBlock);
-        }
-
-        @Bean
-        public LastBlockPersister eosTestnetLastBlockPersister(
-                LastBlockRepository lastBlockRepository,
-                final @Value("${etherscanner.eos.last-block.testnet:#{null}}") Long lastBlock
-        ) {
-            return new LastBlockDbPersister(NetworkType.EOS_TESTNET, lastBlockRepository, lastBlock);
-        }
+    @Bean
+    public LastBlockPersister eosMainnetLastBlockPersister(
+            LastBlockRepository lastBlockRepository,
+            final @Value("${etherscanner.eos.last-block.mainnet:#{null}}") Long lastBlock
+    ) {
+        return new LastBlockDbPersister(NetworkType.EOS_MAINNET, lastBlockRepository, lastBlock);
     }
 
-    @Configuration
-    @ConditionalOnProperty(value = "etherscanner.eos.db-persister", havingValue = "false", matchIfMissing = true)
-    public static class FilePersisterConfiguration {
-        @Bean
-        public LastBlockPersister eosMainnetLastBlockPersister(
-                final @Value("${etherscanner.start-block-dir}") String dir,
-                final @Value("${etherscanner.eos.last-block.mainnet:#{null}}") Long lastBlock
-        ) {
-            return new LastBlockFilePersister(NetworkType.EOS_MAINNET, dir, lastBlock);
-        }
-
-        @Bean
-        public LastBlockPersister eosTestnetLastBlockPersister(
-                final @Value("${etherscanner.start-block-dir}") String dir,
-                final @Value("${etherscanner.eos.last-block.testnet:#{null}}") Long lastBlock
-        ) {
-            return new LastBlockFilePersister(NetworkType.EOS_TESTNET, dir, lastBlock);
-        }
+    @Bean
+    public LastBlockPersister eosTestnetLastBlockPersister(
+            LastBlockRepository lastBlockRepository,
+            final @Value("${etherscanner.eos.last-block.testnet:#{null}}") Long lastBlock
+    ) {
+        return new LastBlockDbPersister(NetworkType.EOS_TESTNET, lastBlockRepository, lastBlock);
     }
 
     @ConditionalOnBean(name = NetworkType.EOS_MAINNET_VALUE)

@@ -1,4 +1,4 @@
-package io.lastwill.eventscan.model;
+package io.lastwill.eventscan.events.model;
 
 import lombok.Getter;
 import org.web3j.abi.EventValues;

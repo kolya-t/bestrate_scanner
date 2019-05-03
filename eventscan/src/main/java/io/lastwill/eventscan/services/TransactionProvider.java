@@ -1,8 +1,8 @@
 package io.lastwill.eventscan.services;
 
+import io.lastwill.eventscan.model.NetworkType;
 import io.mywish.blockchain.WrapperTransaction;
 import io.mywish.blockchain.WrapperTransactionReceipt;
-import io.lastwill.eventscan.model.NetworkType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,14 +35,4 @@ public class TransactionProvider {
     public CompletionStage<WrapperTransactionReceipt> getTransactionReceiptAsync(NetworkType networkType, WrapperTransaction transaction) {
         return networkProvider.get(networkType).getTxReceiptAsync(transaction);
     }
-//
-//    public CompletionStage<List<TransactionReceipt>> getTransactionReceiptsAsync(Collection<String> hashes) {
-//        val futures = hashes.stream()
-//                .map(web3Provider::ethGetTransactionReceipt)
-//                .map(JsonRpcRequest::sendAsync)
-//                .map(future -> future.thenApply(EthGetTransactionReceipt::getResult))
-//                .collect(Collectors.toList());
-//
-//        return sequence(futures);
-//    }
 }

@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 public class PendingStuckEvent extends BaseEvent {
     private final LocalDateTime receivedTime;
     private final int count;
+
     public PendingStuckEvent(NetworkType networkType, LocalDateTime receivedTime, int count) {
         super(networkType);
         this.receivedTime = receivedTime;

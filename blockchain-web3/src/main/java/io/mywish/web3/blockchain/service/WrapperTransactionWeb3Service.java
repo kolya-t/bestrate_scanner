@@ -1,5 +1,6 @@
 package io.mywish.web3.blockchain.service;
 
+import io.mywish.blockchain.WrapperInput;
 import io.mywish.blockchain.WrapperOutput;
 import io.mywish.blockchain.WrapperTransaction;
 import io.mywish.blockchain.service.WrapperTransactionService;
@@ -15,12 +16,15 @@ public class WrapperTransactionWeb3Service implements WrapperTransactionService<
     private final static String ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
     @Autowired
+    private WrapperInputWeb3Service inputBuilder;
+
+    @Autowired
     private WrapperOutputWeb3Service outputBuilder;
 
     @Override
     public WrapperTransaction build(Transaction transaction) {
         String hash = transaction.getHash();
-        List<String> inputs = Collections.singletonList(transaction.getFrom());
+        List<WrapperInput> inputs = Collections.singletonList(inputBuilder.build(transaction));
         List<WrapperOutput> outputs = Collections.singletonList(outputBuilder.build(transaction));
         boolean contractCreation = transaction.getTo() == null || ZERO_ADDRESS.equalsIgnoreCase(transaction.getTo());
         WrapperTransaction wrapper = new WrapperTransaction(

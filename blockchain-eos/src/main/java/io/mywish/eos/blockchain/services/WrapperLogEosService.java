@@ -28,17 +28,6 @@ public class WrapperLogEosService {
     // only create now
     private HashMap<String, ActionEventBuilder<?>> byCumulativeKey = new HashMap<>();
 
-//    private final HashSet<String> requiredActions =  new HashSet<String>() {{
-//        add("create");
-//        add("newaccount");
-//        add("transfer");
-//        add("setcode");
-//        add("init");
-//        add("setfinish");
-//        add("setstart");
-//        add("finalize");
-//    }};
-
     @PostConstruct
     protected void init() throws Exception {
         for (ActionEventBuilder<?> eventBuilder : builders) {

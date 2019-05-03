@@ -3,7 +3,6 @@ package io.lastwill.eventscan.events;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 @Component
@@ -32,7 +31,7 @@ public class TypeHelper {
             return (byte[]) o;
         }
         if (o instanceof String) {
-            return ((String)o).getBytes(StandardCharsets.US_ASCII);
+            return ((String) o).getBytes(StandardCharsets.US_ASCII);
         }
         throw new UnsupportedOperationException("Unsupported type " + o.getClass());
     }
