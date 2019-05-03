@@ -28,7 +28,7 @@ public class TcrPaymentMonitor {
     private SubscriptionRepository subscriptionRepository;
 
     @EventListener
-    private void handleBtcBlock(NewBlockEvent event) {
+    private void handleTecraBlock(NewBlockEvent event) {
         if (event.getNetworkType() != NetworkType.TECRA_MAINNET) {
             return;
         }

@@ -51,12 +51,12 @@ public class Application {
     private SubscriptionRepository subscriptionRepository;
 
     // todo: remove
-    @PostConstruct
-    public void init() {
-        subscriptionRepository.deleteAll();
-        subscriptionRepository.save(new Subscription(
-                UUID.randomUUID(), "TAsqU3tKzrXrmJfsARxRRGAHhcFCNAhVLk", "hello", true));
-    }
+//    @PostConstruct
+//    public void init() {
+//        subscriptionRepository.deleteAll();
+//        subscriptionRepository.save(new Subscription(
+//                UUID.randomUUID(), "TAsqU3tKzrXrmJfsARxRRGAHhcFCNAhVLk", "hello", true));
+//    }
 
     @Bean(destroyMethod = "close")
     public CloseableHttpClient closeableHttpClient(
@@ -82,11 +82,11 @@ public class Application {
 
     @Bean
     public ConnectionFactory connectionFactory(
-            @Value("${io.lastwill.eventscan.mq.host}") String host,
-            @Value("${io.lastwill.eventscan.mq.port}") int port,
-            @Value("${io.lastwill.eventscan.mq.username}") String username,
-            @Value("${io.lastwill.eventscan.mq.password}") String password,
-            @Value("${io.lastwill.eventscan.mq.vhost}") String vhost
+            @Value("${eventscan.mq.host}") String host,
+            @Value("${eventscan.mq.port}") int port,
+            @Value("${eventscan.mq.username}") String username,
+            @Value("${eventscan.mq.password}") String password,
+            @Value("${eventscan.mq.vhost}") String vhost
     ) {
         CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
         connectionFactory.setHost(host);
@@ -130,17 +130,17 @@ public class Application {
     }
 
     @Bean
-    public Queue subscribeQueue(@Value("${io.lastwill.eventscan.mq.subscribe-queue.name}") String queueName) {
+    public Queue subscribeQueue(@Value("${eventscan.mq.subscribe-queue.name}") String queueName) {
         return new Queue(queueName, true);
     }
 
     @Bean
-    public Queue unsubscribeQueue(@Value("${io.lastwill.eventscan.mq.unsubscribe-queue.name}") String queueName) {
+    public Queue unsubscribeQueue(@Value("${eventscan.mq.unsubscribe-queue.name}") String queueName) {
         return new Queue(queueName, true);
     }
 
     @Bean
-    public DirectExchange directExchange(@Value("${io.lastwill.eventscan.mq.exchange.name}") String exchangeName) {
+    public DirectExchange directExchange(@Value("${eventscan.mq.exchange.name}") String exchangeName) {
         return new DirectExchange(exchangeName);
     }
 

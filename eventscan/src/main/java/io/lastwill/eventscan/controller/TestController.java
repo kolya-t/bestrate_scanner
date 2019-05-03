@@ -15,39 +15,39 @@ import javax.annotation.PostConstruct;
 import java.util.UUID;
 
 // todo: remove
-@RestController
+//@RestController
 public class TestController {
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
-
-    @Autowired
-    private DirectExchange exchange;
-
-    @Value("${io.lastwill.eventscan.mq.subscribe-queue.name}")
-    private String subscribeQueueName;
-
-    @Value("${io.lastwill.eventscan.mq.unsubscribe-queue.name}")
-    private String unsubscribeQueueName;
-
-    @PostConstruct
-    protected void init() {
-        BindingBuilder.bind(new Queue(subscribeQueueName))
-                .to(exchange)
-                .withQueueName();
-        BindingBuilder.bind(new Queue(unsubscribeQueueName))
-                .to(exchange)
-                .withQueueName();
-    }
-
-    @GetMapping("/subscribe")
-    public void subscribe() {
-        rabbitTemplate.convertAndSend(subscribeQueueName,
-                new SubscribeMessage(UUID.randomUUID(), "sdfsdfsdf", "aaaa"));
-    }
-
-    @GetMapping("/unsubscribe")
-    public void unsubscribe() {
-        rabbitTemplate.convertAndSend(unsubscribeQueueName,
-                new UnsubscribeMessage(UUID.randomUUID()));
-    }
+//    @Autowired
+//    private RabbitTemplate rabbitTemplate;
+//
+//    @Autowired
+//    private DirectExchange exchange;
+//
+//    @Value("${io.lastwill.eventscan.mq.subscribe-queue.name}")
+//    private String subscribeQueueName;
+//
+//    @Value("${io.lastwill.eventscan.mq.unsubscribe-queue.name}")
+//    private String unsubscribeQueueName;
+//
+//    @PostConstruct
+//    protected void init() {
+//        BindingBuilder.bind(new Queue(subscribeQueueName))
+//                .to(exchange)
+//                .withQueueName();
+//        BindingBuilder.bind(new Queue(unsubscribeQueueName))
+//                .to(exchange)
+//                .withQueueName();
+//    }
+//
+//    @GetMapping("/subscribe")
+//    public void subscribe() {
+//        rabbitTemplate.convertAndSend(subscribeQueueName,
+//                new SubscribeMessage(UUID.randomUUID(), "sdfsdfsdf", "aaaa"));
+//    }
+//
+//    @GetMapping("/unsubscribe")
+//    public void unsubscribe() {
+//        rabbitTemplate.convertAndSend(unsubscribeQueueName,
+//                new UnsubscribeMessage(UUID.randomUUID()));
+//    }
 }

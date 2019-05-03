@@ -21,12 +21,12 @@ public class MQConsumerSubscription {
     @Autowired
     private QueueBinder queueBinder;
 
-    @RabbitListener(queues = "${io.lastwill.eventscan.mq.subscribe-queue.name}")
+    @RabbitListener(queues = "${eventscan.mq.subscribe-queue.name}")
     public void subscribe(SubscribeMessage message) {
-        subscribe(message.getId(), message.getTcrAddress(), message.getQueueName());
+        subscribe(message.getId(), message.getAddress(), message.getQueueName());
     }
 
-    @RabbitListener(queues = "${io.lastwill.eventscan.mq.unsubscribe-queue.name}")
+    @RabbitListener(queues = "${eventscan.mq.unsubscribe-queue.name}")
     public void unsubscribe(UnsubscribeMessage message) {
         unsubscribe(message.getId());
     }
