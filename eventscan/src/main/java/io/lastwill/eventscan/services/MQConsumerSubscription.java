@@ -20,7 +20,7 @@ public class MQConsumerSubscription {
     private QueueBinder queueBinder;
 
     @Synchronized
-    @RabbitListener(queues = "${eventscan.mq.subscribe-queue.symbol}")
+    @RabbitListener(queues = "${eventscan.mq.subscribe-queue.name}")
     public void subscribe(SubscribeMessage message) {
         Subscription subscription = subscriptionRepository.findByClientId(message.getId());
         if (subscription == null) {
@@ -44,7 +44,7 @@ public class MQConsumerSubscription {
     }
 
     @Synchronized
-    @RabbitListener(queues = "${eventscan.mq.unsubscribe-queue.symbol}")
+    @RabbitListener(queues = "${eventscan.mq.unsubscribe-queue.name}")
     public void unsubscribe(UnsubscribeMessage message) {
         Subscription subscription = subscriptionRepository.findByClientId(message.getId());
         if (subscription == null) {

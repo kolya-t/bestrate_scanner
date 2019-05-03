@@ -21,13 +21,13 @@ public class BtcNetwork extends WrapperNetwork {
 
     private final NetworkParameters networkParameters;
 
-    @Autowired
     private BtcBlockParser btcBlockParser;
 
     public BtcNetwork(NetworkType type, BtcdClient btcdClient, NetworkParameters networkParameters) {
         super(type);
         this.btcdClient = btcdClient;
         this.networkParameters = networkParameters;
+        this.btcBlockParser = new BtcBlockParser(btcdClient);
     }
 
     @Override

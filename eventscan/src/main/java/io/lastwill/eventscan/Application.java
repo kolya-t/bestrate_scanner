@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.lastwill.eventscan.events.EventModule;
 import io.lastwill.eventscan.repositories.SubscriptionRepository;
 import io.mywish.scanner.ScannerModule;
+import okhttp3.OkHttpClient;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -28,6 +29,8 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
+
+import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 @Import({ScannerModule.class, EventModule.class,})
@@ -128,5 +131,17 @@ public class Application {
     @Bean
     public DirectExchange directExchange(@Value("${eventscan.mq.exchange.name}") String exchangeName) {
         return new DirectExchange(exchangeName);
+    }
+
+    @Bean
+    public OkHttpClient okHttpClient(
+            @Value("${io.lastwill.eventscan.backend.socket-timeout}") long socketTimeout,
+            @Value("${io.lastwill.eventscan.backend.connection-timeout}") long connectionTimeout
+    ) {
+        return new OkHttpClient.Builder()
+                .writeTimeout(socketTimeout, TimeUnit.MILLISECONDS)
+                .readTimeout(socketTimeout, TimeUnit.MILLISECONDS)
+                .connectTimeout(connectionTimeout, TimeUnit.MILLISECONDS)
+                .build();
     }
 }
