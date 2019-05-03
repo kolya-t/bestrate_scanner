@@ -8,11 +8,11 @@
     </appender>
 
     <logger name="io.lastwill" level="debug"/>
-    <logger name="io.mywish.tecra.blockchain.services.TecraScanner" level="DEBUG"/>
-    <!--<logger name="org.bitcoinj" level="DEBUG"/>-->
-    <!--<logger name="org.apache.http.wire" level="DEBUG" />-->
-    <!--<logger name="org.apache.http" level="DEBUG" />-->
-    <!--<logger name="org.hibernate.type" level="TRACE" />-->
+    <logger name="BtcScanner" level="DEBUG"/>
+    <!--<logger symbol="org.bitcoinj" level="DEBUG"/>-->
+    <!--<logger symbol="org.apache.http.wire" level="DEBUG" />-->
+    <!--<logger symbol="org.apache.http" level="DEBUG" />-->
+    <!--<logger symbol="org.hibernate.type" level="TRACE" />-->
 
     <root level="info">
         <appender-ref ref="STDOUT"/>

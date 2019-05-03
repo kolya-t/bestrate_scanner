@@ -1,5 +1,7 @@
 package io.lastwill.eventscan.model;
 
 public enum NetworkProviderType {
-    TECRA
+    WEB3,
+    EOS,
+    BTC,
 }

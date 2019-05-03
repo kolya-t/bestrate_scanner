@@ -18,16 +18,20 @@ public class Subscription {
     @Column(nullable = false, unique = true)
     private UUID clientId;
     @Column(nullable = false)
-    private String tcrAddress;
+    private String address;
     @Column(nullable = false)
     private String queueName;
     @Column(nullable = false)
     private Boolean isSubscribed;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private NetworkType network;
 
-    public Subscription(UUID clientId, String tcrAddress, String queueName, boolean isSubscribed) {
+    public Subscription(UUID clientId, String address, String queueName, boolean isSubscribed, NetworkType network) {
         this.clientId = clientId;
-        this.tcrAddress = tcrAddress;
+        this.address = address;
         this.queueName = queueName;
         this.isSubscribed = isSubscribed;
+        this.network = network;
     }
 }

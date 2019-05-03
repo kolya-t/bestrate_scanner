@@ -4,9 +4,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.lastwill.eventscan.events.EventModule;
-import io.lastwill.eventscan.model.Subscription;
-import io.lastwill.eventscan.repositories.SubscriptionRepository;
 import io.mywish.scanner.ScannerModule;
+import okhttp3.OkHttpClient;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -21,7 +20,6 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -30,8 +28,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 
-import javax.annotation.PostConstruct;
-import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 @Import({ScannerModule.class, EventModule.class,})
@@ -41,22 +38,10 @@ public class Application {
     public static void main(String[] args) {
         new SpringApplicationBuilder()
                 .addCommandLineProperties(true)
-//                .web(false) // todo: remove
                 .sources(Application.class)
                 .main(Application.class)
                 .run(args);
     }
-
-    @Autowired
-    private SubscriptionRepository subscriptionRepository;
-
-    // todo: remove
-//    @PostConstruct
-//    public void init() {
-//        subscriptionRepository.deleteAll();
-//        subscriptionRepository.save(new Subscription(
-//                UUID.randomUUID(), "TAsqU3tKzrXrmJfsARxRRGAHhcFCNAhVLk", "hello", true));
-//    }
 
     @Bean(destroyMethod = "close")
     public CloseableHttpClient closeableHttpClient(
@@ -105,9 +90,7 @@ public class Application {
     @Bean
     public ObjectMapper objectMapper() {
         return new ObjectMapper()
-                // TODO: remove it!
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .enableDefaultTyping()
                 .registerModule(new JavaTimeModule());
     }
 
@@ -144,15 +127,15 @@ public class Application {
         return new DirectExchange(exchangeName);
     }
 
-//    @Bean
-//    public OkHttpClient okHttpClient(
-//            @Value("${io.lastwill.eventscan.backend.socket-timeout}") long socketTimeout,
-//            @Value("${io.lastwill.eventscan.backend.connection-timeout}") long connectionTimeout
-//    ) {
-//        return new OkHttpClient.Builder()
-//                .writeTimeout(socketTimeout, TimeUnit.MILLISECONDS)
-//                .readTimeout(socketTimeout, TimeUnit.MILLISECONDS)
-//                .connectTimeout(connectionTimeout, TimeUnit.MILLISECONDS)
-//                .build();
-//    }
+    @Bean
+    public OkHttpClient okHttpClient(
+            @Value("${io.lastwill.eventscan.backend.socket-timeout}") long socketTimeout,
+            @Value("${io.lastwill.eventscan.backend.connection-timeout}") long connectionTimeout
+    ) {
+        return new OkHttpClient.Builder()
+                .writeTimeout(socketTimeout, TimeUnit.MILLISECONDS)
+                .readTimeout(socketTimeout, TimeUnit.MILLISECONDS)
+                .connectTimeout(connectionTimeout, TimeUnit.MILLISECONDS)
+                .build();
+    }
 }

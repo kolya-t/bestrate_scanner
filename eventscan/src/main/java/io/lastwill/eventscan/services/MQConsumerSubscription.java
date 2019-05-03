@@ -10,8 +10,6 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
-
 @Slf4j
 @Component
 public class MQConsumerSubscription {
@@ -21,47 +19,45 @@ public class MQConsumerSubscription {
     @Autowired
     private QueueBinder queueBinder;
 
+    @Synchronized
     @RabbitListener(queues = "${eventscan.mq.subscribe-queue.name}")
     public void subscribe(SubscribeMessage message) {
-        subscribe(message.getId(), message.getAddress(), message.getQueueName());
-    }
-
-    @RabbitListener(queues = "${eventscan.mq.unsubscribe-queue.name}")
-    public void unsubscribe(UnsubscribeMessage message) {
-        unsubscribe(message.getId());
-    }
-
-    @Synchronized
-    protected void subscribe(UUID id, String tcrAddress, String queueName) {
-        Subscription subscription = subscriptionRepository.findByClientId(id);
+        Subscription subscription = subscriptionRepository.findByClientId(message.getId());
         if (subscription == null) {
-            subscription = new Subscription(id, tcrAddress, queueName, true);
+            subscription = new Subscription(
+                    message.getId(),
+                    message.getAddress(),
+                    message.getQueueName(),
+                    true,
+                    message.getNetwork()
+            );
         } else if (!subscription.getIsSubscribed()) {
             subscription.setIsSubscribed(true);
         } else {
-            log.warn("Subscription {} already subscribed.", id);
+            log.warn("Subscription {} already subscribed.", message.getId());
             return;
         }
 
         subscriptionRepository.save(subscription);
-        queueBinder.add(queueName);
-        log.info("Added new subscription {}.", id);
+        queueBinder.add(message.getQueueName());
+        log.info("Added new subscription {}.", message.getId());
     }
 
     @Synchronized
-    protected void unsubscribe(UUID id) {
-        Subscription subscription = subscriptionRepository.findByClientId(id);
+    @RabbitListener(queues = "${eventscan.mq.unsubscribe-queue.name}")
+    public void unsubscribe(UnsubscribeMessage message) {
+        Subscription subscription = subscriptionRepository.findByClientId(message.getId());
         if (subscription == null) {
-            log.warn("Subscription {} doesn't exist.", id);
+            log.warn("Subscription {} doesn't exist.", message.getId());
             return;
         } else if (!subscription.getIsSubscribed()) {
-            log.warn("Subscription {} already subscribed.", id);
+            log.warn("Subscription {} already subscribed.", message.getId());
             return;
         }
 
         subscription.setIsSubscribed(true);
         subscriptionRepository.save(subscription);
         queueBinder.remove(subscription.getQueueName());
-        log.info("Removed subscription {}.", id);
+        log.info("Removed subscription {}.", message.getId());
     }
 }

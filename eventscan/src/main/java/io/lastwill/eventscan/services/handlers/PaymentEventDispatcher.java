@@ -24,6 +24,7 @@ public class PaymentEventDispatcher {
                             event.getSubscription(),
                             event.getNetworkType(),
                             event.getTransaction().getHash(),
+                            event.getTokenAddress(),
                             event.getCurrency(),
                             event.getAmount()
                     )
