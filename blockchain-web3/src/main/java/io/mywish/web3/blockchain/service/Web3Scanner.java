@@ -1,9 +1,6 @@
 package io.mywish.web3.blockchain.service;
 
-import io.mywish.blockchain.WrapperBlock;
-import io.mywish.blockchain.WrapperOutput;
-import io.mywish.blockchain.WrapperTransaction;
-import io.mywish.blockchain.WrapperTransactionReceipt;
+import io.mywish.blockchain.*;
 import io.mywish.scanner.model.NewBlockEvent;
 import io.mywish.scanner.services.LastBlockPersister;
 import io.mywish.scanner.services.ScannerPolling;
@@ -27,14 +24,14 @@ public class Web3Scanner extends ScannerPolling {
 
         block.getTransactions()
                 .forEach(transaction -> {
-                    String from = transaction.getInputs().get(0);
-                    WrapperOutput to = transaction.getOutputs().get(0);
-                    if (from != null) {
-                        addressTransactions.add(from.toLowerCase(), transaction);
+                    WrapperInput from = transaction.getInputs().get(0);
+                    if (from != null && from.getAddress() != null) {
+                        addressTransactions.add(from.getAddress().toLowerCase(), transaction);
                     }
                     else {
                         log.warn("Empty from field for transaction {}. Skip it.", transaction.getHash());
                     }
+                    WrapperOutput to = transaction.getOutputs().get(0);
                     if (to != null && to.getAddress() != null) {
                         addressTransactions.add(to.getAddress().toLowerCase(), transaction);
                     }

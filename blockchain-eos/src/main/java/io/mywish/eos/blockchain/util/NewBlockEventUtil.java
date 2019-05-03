@@ -1,9 +1,6 @@
 package io.mywish.eos.blockchain.util;
 
-import io.mywish.blockchain.WrapperBlock;
-import io.mywish.blockchain.WrapperNetwork;
-import io.mywish.blockchain.WrapperOutput;
-import io.mywish.blockchain.WrapperTransaction;
+import io.mywish.blockchain.*;
 import io.mywish.scanner.model.NewBlockEvent;
 import io.mywish.scanner.model.NewPendingTransactionsEvent;
 import lombok.AccessLevel;
@@ -22,9 +19,9 @@ public class NewBlockEventUtil {
 
         block.getTransactions().forEach(tx -> {
             Stream.concat(
-                    tx.getInputs().stream(),
-                    tx.getOutputs().stream()
-                            .map(WrapperOutput::getAddress))
+                    tx.getInputs().stream().map(WrapperInput::getAddress),
+                    tx.getOutputs().stream().map(WrapperOutput::getAddress)
+            )
                     .filter(address -> !contains(addressTransactions, address, tx))
                     .forEach(address -> addressTransactions.add(address, tx));
         });
