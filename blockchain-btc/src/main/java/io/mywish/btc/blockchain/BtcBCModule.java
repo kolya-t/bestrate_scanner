@@ -154,8 +154,8 @@ public class BtcBCModule {
     public BtcScanner tcrScannerMain(
             final @Qualifier(NetworkType.TECRA_MAINNET_VALUE) BtcNetwork network,
             final @Qualifier("tcrMainnetLastBlockPersister") LastBlockPersister lastBlockPersister,
-            final @Value("${etherscanner.tecra.polling-interval-ms}") Long pollingInterval,
-            final @Value("${etherscanner.tecra.commit-chain-length}") Integer commitmentChainLength
+            final @Value("${etherscanner.bitcoin.polling-interval-ms}") Long pollingInterval,
+            final @Value("${etherscanner.bitcoin.commit-chain-length}") Integer commitmentChainLength
     ) {
         return new BtcScanner(
                 network,

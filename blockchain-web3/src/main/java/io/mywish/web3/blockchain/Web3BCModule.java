@@ -20,7 +20,7 @@ import org.web3j.protocol.http.HttpService;
 @Configuration
 @ComponentScan
 public class Web3BCModule {
-    @ConditionalOnProperty(name = "io.lastwill.eventscan.web3-url.ethereum")
+    @ConditionalOnProperty(name = "etherscanner.web3-url.ethereum")
     @Bean(name = NetworkType.ETHEREUM_MAINNET_VALUE)
     public Web3Network ethNetMain(
             OkHttpClient client,
@@ -32,7 +32,7 @@ public class Web3BCModule {
                 pendingThreshold);
     }
 
-    @ConditionalOnProperty(name = "io.lastwill.eventscan.web3-url.ropsten")
+    @ConditionalOnProperty(name = "etherscanner.web3-url.ropsten")
     @Bean(name = NetworkType.ETHEREUM_ROPSTEN_VALUE)
     public Web3Network ethNetRopsten(
             OkHttpClient client,

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.lastwill.eventscan.events.EventModule;
-import io.lastwill.eventscan.repositories.SubscriptionRepository;
 import io.mywish.scanner.ScannerModule;
 import okhttp3.OkHttpClient;
 import org.apache.http.client.config.CookieSpecs;
@@ -21,7 +20,6 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -44,9 +42,6 @@ public class Application {
                 .main(Application.class)
                 .run(args);
     }
-
-    @Autowired
-    private SubscriptionRepository subscriptionRepository;
 
     @Bean(destroyMethod = "close")
     public CloseableHttpClient closeableHttpClient(
@@ -96,7 +91,6 @@ public class Application {
     public ObjectMapper objectMapper() {
         return new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .enableDefaultTyping()
                 .registerModule(new JavaTimeModule());
     }
 
