@@ -20,8 +20,11 @@
         <module>scanner</module>
         <module>mywish-model</module>
         <module>mywish-events</module>
+        <module>eos-cli4j</module>
         <module>blockchain</module>
-        <module>blockchain-tecra</module>
+        <module>blockchain-web3</module>
+        <module>blockchain-eos</module>
+        <module>blockchain-btc</module>
     </modules>
 
     <properties>
@@ -32,6 +35,7 @@
 
         <java.version>1.8</java.version>
 
+        <web3j.version>3.4.0</web3j.version>
         <httpclient.version>4.5.2</httpclient.version>
         <postgresql.version>42.1.4</postgresql.version>
         <spongycastle.version>1.58.0.0</spongycastle.version>
