@@ -1,6 +1,6 @@
 package io.lastwill.eventscan.services.monitors.payments;
 
-import io.lastwill.eventscan.events.model.SubscriptionPaymentEvent;
+import io.lastwill.eventscan.events.model.PaymentEvent;
 import io.lastwill.eventscan.model.NetworkProviderType;
 import io.lastwill.eventscan.model.NetworkType;
 import io.lastwill.eventscan.repositories.SubscriptionRepository;
@@ -59,8 +59,8 @@ public class BtcTcrPaymentMonitor {
                         return;
                     }
 
-                    for (WrapperTransaction tx: transactions) {
-                        for (WrapperOutput output: tx.getOutputs()) {
+                    for (WrapperTransaction tx : transactions) {
+                        for (WrapperOutput output : tx.getOutputs()) {
                             if (output.getParentTransaction() == null) {
                                 log.warn("Skip it. Output {} has not parent transaction.", output);
                                 continue;
@@ -69,12 +69,18 @@ public class BtcTcrPaymentMonitor {
                                 continue;
                             }
 
-                            eventPublisher.publish(new SubscriptionPaymentEvent(
-                                    event.getNetworkType(),
-                                    tx,
-                                    output.getValue(),
-                                    currencyByNetwork.get(event.getNetworkType()),
+                            eventPublisher.publish(new PaymentEvent(
                                     subscription,
+                                    event.getNetworkType(),
+                                    event.getBlock(),
+                                    tx,
+                                    null,
+                                    subscription.getAddress(),
+                                    output.getValue(),
+                                    tx.getFee(),
+                                    null,
+                                    currencyByNetwork.get(event.getNetworkType()),
+                                    null,
                                     true
                             ));
                         }
@@ -93,12 +99,18 @@ public class BtcTcrPaymentMonitor {
                         }
 
                         if (!sentValue.equals(BigInteger.ZERO)) {
-                            eventPublisher.publish(new SubscriptionPaymentEvent(
-                                    event.getNetworkType(),
-                                    tx,
-                                    sentValue.negate(),
-                                    currencyByNetwork.get(event.getNetworkType()),
+                            eventPublisher.publish(new PaymentEvent(
                                     subscription,
+                                    event.getNetworkType(),
+                                    event.getBlock(),
+                                    tx,
+                                    subscription.getAddress(),
+                                    null,
+                                    sentValue,
+                                    tx.getFee(),
+                                    null,
+                                    currencyByNetwork.get(event.getNetworkType()),
+                                    null,
                                     true
                             ));
                         }

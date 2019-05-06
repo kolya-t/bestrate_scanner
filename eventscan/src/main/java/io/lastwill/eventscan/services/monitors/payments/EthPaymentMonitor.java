@@ -1,6 +1,6 @@
 package io.lastwill.eventscan.services.monitors.payments;
 
-import io.lastwill.eventscan.events.model.SubscriptionPaymentEvent;
+import io.lastwill.eventscan.events.model.PaymentEvent;
 import io.lastwill.eventscan.model.NetworkProviderType;
 import io.lastwill.eventscan.model.Subscription;
 import io.lastwill.eventscan.repositories.SubscriptionRepository;
@@ -57,13 +57,19 @@ public class EthPaymentMonitor {
                         .anyMatch(address -> subscription.getAddress().equalsIgnoreCase(address))) {
                     transactionProvider.getTransactionReceiptAsync(event.getNetworkType(), transaction)
                             .thenAccept(receipt -> {
-                                eventPublisher.publish(new SubscriptionPaymentEvent(
-                                        event.getNetworkType(),
-                                        transaction,
-                                        getAmountFor(subscription.getAddress(), transaction),
-                                        "ETH",
+                                eventPublisher.publish(new PaymentEvent(
                                         subscription,
-                                        true
+                                        event.getNetworkType(),
+                                        event.getBlock(),
+                                        transaction,
+                                        transaction.getSingleInputAddress(),
+                                        transaction.getSingleOutputAddress(),
+                                        getAmountFor(transaction.getSingleOutputAddress(), transaction),
+                                        null,
+                                        null,
+                                        "ETH",
+                                        null,
+                                        receipt.isSuccess()
                                 ));
                             });
                 }

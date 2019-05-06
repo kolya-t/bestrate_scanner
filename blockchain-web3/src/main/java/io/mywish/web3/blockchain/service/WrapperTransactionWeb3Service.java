@@ -31,7 +31,9 @@ public class WrapperTransactionWeb3Service implements WrapperTransactionService<
                 hash,
                 inputs,
                 outputs,
-                contractCreation
+                contractCreation,
+                transaction.getGasPrice(),
+                null
         );
         wrapper.setCreates(transaction.getCreates());
         return wrapper;

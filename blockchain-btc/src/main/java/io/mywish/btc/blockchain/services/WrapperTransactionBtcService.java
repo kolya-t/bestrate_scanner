@@ -8,6 +8,7 @@ import org.bitcoinj.core.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -30,11 +31,19 @@ public class WrapperTransactionBtcService {
                 .map(output -> outputBuilder.build(transaction, output, networkParameters))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+
+        BigInteger fee = null;
+        if (transaction.getFee() != null) {
+            fee = BigInteger.valueOf(transaction.getFee().getValue());
+        }
+
         return new WrapperTransaction(
                 hash,
                 inputs,
                 outputs,
-                false
+                false,
+                null,
+                fee
         );
     }
 }

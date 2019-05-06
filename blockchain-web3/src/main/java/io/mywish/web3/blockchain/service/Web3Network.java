@@ -93,6 +93,7 @@ public class Web3Network extends WrapperNetwork {
     @Override
     public WrapperTransactionReceipt getTxReceipt(WrapperTransaction transaction) throws Exception {
         return transactionReceiptBuilder.build(
+                transaction,
                 web3j
                         .ethGetTransactionReceipt(transaction.getHash())
                         .send()

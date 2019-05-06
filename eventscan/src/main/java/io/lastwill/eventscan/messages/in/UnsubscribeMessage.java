@@ -1,5 +1,6 @@
 package io.lastwill.eventscan.messages.in;
 
+import io.lastwill.eventscan.messages.BaseMessage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,8 +12,7 @@ import java.util.UUID;
 @Setter
 @ToString(callSuper = true)
 @NoArgsConstructor
-public class UnsubscribeMessage extends BaseInMessage {
-    public UnsubscribeMessage(UUID id) {
-        super(id);
-    }
+public class UnsubscribeMessage implements BaseMessage {
+    private final String type = "unsubscribe";
+    private UUID id;
 }

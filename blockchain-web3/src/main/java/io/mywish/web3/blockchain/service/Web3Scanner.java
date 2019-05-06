@@ -56,7 +56,7 @@ public class Web3Scanner extends ScannerPolling {
                         }
 
                     }
-//                    eventPublisher.publish(new NewTransactionEvent(network.getType(), block, transaction));
+//                    eventPublisher.publish(new NewTransactionEvent(blockchain.getType(), block, transaction));
                 });
 
         eventPublisher.publish(new NewBlockEvent(network.getType(), block, addressTransactions));

@@ -85,7 +85,7 @@ public class EosNetwork extends WrapperNetwork {
 
     @PreDestroy
     public void close() {
-        log.info("Terminate {} network.", getType());
+        log.info("Terminate {} blockchain.", getType());
         continueSubscription.set(false);
     }
 }
