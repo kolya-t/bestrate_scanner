@@ -1,6 +1,7 @@
 package io.mywish.web3.blockchain.service;
 
 import io.mywish.blockchain.ContractEvent;
+import io.mywish.blockchain.WrapperTransaction;
 import io.mywish.blockchain.WrapperTransactionReceipt;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class WrapperTransactionReceiptWeb3Service {
         return status.compareTo(BigInteger.ZERO) != 0;
     }
 
-    public WrapperTransactionReceipt build(TransactionReceipt receipt) {
+    public WrapperTransactionReceipt build(WrapperTransaction transaction, TransactionReceipt receipt) {
         String hash = receipt.getTransactionHash();
         List<String> contracts = Collections.singletonList(receipt.getContractAddress());
         List<ContractEvent> logs = receipt
@@ -41,11 +42,18 @@ public class WrapperTransactionReceiptWeb3Service {
                 .map(this::buildEvent)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+
+        BigInteger fee = null;
+        if (receipt.getGasUsed() != null && transaction.getGasPrice() != null) {
+            fee = receipt.getGasUsed().multiply(transaction.getGasPrice());
+        }
+
         return new WrapperTransactionReceipt(
                 hash,
                 contracts,
                 logs,
-                isSuccess(receipt)
+                isSuccess(receipt),
+                fee
         );
     }
 

@@ -2,7 +2,7 @@ package io.lastwill.eventscan.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.lastwill.eventscan.messages.out.BaseOutMessage;
+import io.lastwill.eventscan.messages.BaseMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.Message;
@@ -34,13 +34,10 @@ public class MQProducer {
     @PostConstruct
     protected void init() {
         properties.setExpiration(ttl);
+        properties.setContentType("application/json");
     }
 
-    public void send(BaseOutMessage message) {
-        send(message.getSubscription().getQueueName(), message);
-    }
-
-    protected synchronized void send(String queueName, BaseOutMessage notify) {
+    public synchronized void send(String queueName, BaseMessage message) {
         if (!queueBinder.isAvailable(queueName)) {
             log.error("Queue '{}' is not available.", queueName);
             return;
@@ -48,9 +45,9 @@ public class MQProducer {
 
         byte[] bytes;
         try {
-            bytes = objectMapper.writeValueAsBytes(notify);
+            bytes = objectMapper.writeValueAsBytes(message);
         } catch (JsonProcessingException e) {
-            log.error("Error when converting message '{}' to string.", notify, e);
+            log.error("Error when converting message '{}' to string.", message, e);
             return;
         }
 

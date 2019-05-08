@@ -1,6 +1,6 @@
 package io.lastwill.eventscan.services.handlers;
 
-import io.lastwill.eventscan.events.model.SubscriptionPaymentEvent;
+import io.lastwill.eventscan.events.model.PaymentEvent;
 import io.lastwill.eventscan.messages.out.PaymentMessage;
 import io.lastwill.eventscan.services.MQProducer;
 import lombok.extern.slf4j.Slf4j;
@@ -17,16 +17,22 @@ public class PaymentEventDispatcher {
     private MQProducer producer;
 
     @EventListener
-    private void onSubscriptionPayment(final SubscriptionPaymentEvent event) {
+    private void onSubscriptionPayment(final PaymentEvent event) {
         try {
-            producer.send(
+            producer.send(event.getSubscription().getQueueName(),
                     new PaymentMessage(
-                            event.getSubscription(),
+                            event.getSubscription().getClientId(),
                             event.getNetworkType(),
+                            event.getBlock().getHash(),
                             event.getTransaction().getHash(),
+                            event.getAddressFrom(),
+                            event.getAddressTo(),
+                            event.getBlock().getTimestamp(),
                             event.getTokenAddress(),
                             event.getCurrency(),
-                            event.getAmount()
+                            event.getAmount(),
+                            event.getFee(),
+                            event.getMemo()
                     )
             );
         } catch (Throwable e) {

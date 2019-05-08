@@ -26,12 +26,23 @@ public class Subscription {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private NetworkType network;
+    private String tokenAddress;
+    @Column(nullable = false)
+    private String currency;
 
-    public Subscription(UUID clientId, String address, String queueName, boolean isSubscribed, NetworkType network) {
+    public Subscription(UUID clientId,
+                        String address,
+                        String queueName,
+                        boolean isSubscribed,
+                        NetworkType network,
+                        String tokenAddress,
+                        String currency) {
         this.clientId = clientId;
         this.address = address;
         this.queueName = queueName;
         this.isSubscribed = isSubscribed;
         this.network = network;
+        this.tokenAddress = tokenAddress;
+        this.currency = currency;
     }
 }

@@ -1,10 +1,8 @@
 package io.lastwill.eventscan.services.monitors.payments;
 
-import io.lastwill.eventscan.events.model.SubscriptionPaymentEvent;
+import io.lastwill.eventscan.events.model.PaymentEvent;
 import io.lastwill.eventscan.events.model.contract.eos.EosTransferEvent;
 import io.lastwill.eventscan.model.NetworkProviderType;
-import io.lastwill.eventscan.model.Subscription;
-import io.lastwill.eventscan.repositories.CurrencyRepository;
 import io.lastwill.eventscan.repositories.SubscriptionRepository;
 import io.lastwill.eventscan.services.TransactionProvider;
 import io.mywish.blockchain.WrapperTransaction;
@@ -16,8 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Component
@@ -29,9 +28,6 @@ public class EosPaymentMonitor {
     private SubscriptionRepository subscriptionRepository;
 
     @Autowired
-    private CurrencyRepository currencyRepository;
-
-    @Autowired
     private EventPublisher eventPublisher;
 
     @EventListener
@@ -40,16 +36,20 @@ public class EosPaymentMonitor {
             return;
         }
 
-        currencyRepository
-                .findAllByNetwork(newBlockEvent.getNetworkType())
-                .forEach(currency -> {
-                    List<WrapperTransaction> transactions = newBlockEvent.getTransactionsByAddress().get(currency.getTokenAddress());
+        Set<String> addresses = newBlockEvent.getTransactionsByAddress().keySet();
+        if (addresses.isEmpty()) {
+            return;
+        }
+
+        subscriptionRepository.findSubscribedByTokenAddress(addresses, newBlockEvent.getNetworkType())
+                .forEach(subscription -> {
+                    List<WrapperTransaction> transactions = newBlockEvent.getTransactionsByAddress().get(subscription.getTokenAddress());
                     if (transactions == null || transactions.isEmpty()) {
                         return;
                     }
 
                     transactions.forEach(transaction -> transaction.getOutputs().forEach(output -> {
-                        if (!output.getAddress().equalsIgnoreCase(currency.getTokenAddress())) {
+                        if (!output.getAddress().equalsIgnoreCase(subscription.getTokenAddress())) {
                             return;
                         }
 
@@ -59,8 +59,7 @@ public class EosPaymentMonitor {
                                     newBlockEvent.getNetworkType(),
                                     transaction
                             );
-                        }
-                        catch (Exception e) {
+                        } catch (Exception e) {
                             log.error("Error on getting receipt tx {}.", transaction, e);
                             return;
                         }
@@ -69,24 +68,27 @@ public class EosPaymentMonitor {
                                 .stream()
                                 .filter(event -> event instanceof EosTransferEvent)
                                 .map(event -> (EosTransferEvent) event)
-                                .filter(event -> currency.getTokenAddress().equalsIgnoreCase(event.getAddress()))
-                                .filter(event -> currency.getSymbol().equalsIgnoreCase(event.getSymbol()))
+                                .filter(event -> subscription.getTokenAddress().equalsIgnoreCase(event.getAddress()))
+                                .filter(event -> subscription.getCurrency().equalsIgnoreCase(event.getSymbol()))
+                                .filter(event -> subscription.getAddress().equalsIgnoreCase(event.getFrom())
+                                        || subscription.getAddress().equalsIgnoreCase(event.getTo()))
                                 .forEach(transferEvent -> {
-                                    List<Subscription> subscriptions = subscriptionRepository.findSubscribedByAddressesListAndNetwork(
-                                                    Arrays.asList(transferEvent.getFrom(), transferEvent.getTo()),
-                                                    newBlockEvent.getNetworkType());
 
-                                    subscriptions.forEach(subscription -> eventPublisher.publish(new SubscriptionPaymentEvent(
-                                            newBlockEvent.getNetworkType(),
-                                            transaction,
-                                            subscription.getAddress().equals(transferEvent.getTo())
-                                                    ? transferEvent.getTokens()
-                                                    : transferEvent.getTokens().negate(),
-                                            currency.getTokenAddress(),
-                                            currency.getSymbol(),
+                                    String memo = new String(transferEvent.getData(), StandardCharsets.US_ASCII);
+                                    eventPublisher.publish(new PaymentEvent(
                                             subscription,
-                                            true
-                                    )));
+                                            newBlockEvent.getNetworkType(),
+                                            newBlockEvent.getBlock(),
+                                            transaction,
+                                            transferEvent.getFrom(),
+                                            transferEvent.getTo(),
+                                            transferEvent.getTokens(),
+                                            null,
+                                            subscription.getTokenAddress(),
+                                            subscription.getCurrency(),
+                                            memo,
+                                            receipt.isSuccess()
+                                    ));
                                 });
                     }));
                 });

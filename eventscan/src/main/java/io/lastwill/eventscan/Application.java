@@ -2,6 +2,7 @@ package io.lastwill.eventscan;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.lastwill.eventscan.events.EventModule;
 import io.mywish.scanner.ScannerModule;
@@ -91,6 +92,7 @@ public class Application {
     public ObjectMapper objectMapper() {
         return new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .configure(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS, false)
                 .registerModule(new JavaTimeModule());
     }
 

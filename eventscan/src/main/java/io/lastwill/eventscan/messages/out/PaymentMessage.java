@@ -1,31 +1,30 @@
 package io.lastwill.eventscan.messages.out;
 
+import io.lastwill.eventscan.messages.BaseMessage;
 import io.lastwill.eventscan.model.NetworkType;
-import io.lastwill.eventscan.model.Subscription;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.math.BigInteger;
+import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
 @ToString(callSuper = true)
 @NoArgsConstructor
-public class PaymentMessage extends BaseOutMessage {
-    private NetworkType network;
-    private String transactionHash;
+@AllArgsConstructor
+public class PaymentMessage implements BaseMessage {
+    private final String type = "payment";
+    private UUID id;
+    private NetworkType blockchain;
+    private String blockHash;
+    private String hash;
+    private String addressFrom;
+    private String addressTo;
+    private Instant timestamp;
     private String tokenAddress;
     private String currency;
     private BigInteger amount;
-
-    public PaymentMessage(Subscription subscription, NetworkType network, String transactionHash, String tokenAddress, String currency, BigInteger amount) {
-        super(subscription);
-        this.network = network;
-        this.transactionHash = transactionHash;
-        this.tokenAddress = tokenAddress;
-        this.currency = currency;
-        this.amount = amount;
-    }
+    private BigInteger fee;
+    private String description;
 }

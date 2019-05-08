@@ -3,6 +3,7 @@ package io.mywish.blockchain;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigInteger;
 import java.util.List;
 
 @Getter
@@ -11,6 +12,8 @@ public class WrapperTransaction {
     private final List<WrapperInput> inputs;
     private final List<WrapperOutput> outputs;
     private final boolean contractCreation;
+    private BigInteger fee;
+    private BigInteger gasPrice;
     @Setter
     private String creates = null;
 
@@ -23,6 +26,21 @@ public class WrapperTransaction {
         this.inputs = inputs;
         this.outputs = outputs;
         this.contractCreation = contractCreation;
+    }
+
+    public WrapperTransaction(
+            final String txHash,
+            final List<WrapperInput> inputs,
+            final List<WrapperOutput> outputs,
+            boolean contractCreation,
+            final BigInteger gasPrice,
+            final BigInteger fee) {
+        this.hash = txHash;
+        this.inputs = inputs;
+        this.outputs = outputs;
+        this.contractCreation = contractCreation;
+        this.gasPrice = gasPrice;
+        this.fee = fee;
     }
 
     public boolean isSingleOutput() {

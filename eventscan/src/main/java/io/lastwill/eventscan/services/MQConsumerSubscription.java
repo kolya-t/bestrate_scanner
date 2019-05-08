@@ -29,7 +29,9 @@ public class MQConsumerSubscription {
                     message.getAddress(),
                     message.getQueueName(),
                     true,
-                    message.getNetwork()
+                    message.getBlockchain(),
+                    message.getTokenAddress(),
+                    message.getCurrency()
             );
         } else if (!subscription.getIsSubscribed()) {
             subscription.setIsSubscribed(true);

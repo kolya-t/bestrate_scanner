@@ -1,6 +1,6 @@
 package io.lastwill.eventscan.services.monitors.payments;
 
-import io.lastwill.eventscan.events.model.SubscriptionPaymentEvent;
+import io.lastwill.eventscan.events.model.PaymentEvent;
 import io.lastwill.eventscan.model.NetworkProviderType;
 import io.lastwill.eventscan.model.NetworkType;
 import io.lastwill.eventscan.repositories.SubscriptionRepository;
@@ -59,27 +59,8 @@ public class BtcTcrPaymentMonitor {
                         return;
                     }
 
-                    for (WrapperTransaction tx: transactions) {
-                        for (WrapperOutput output: tx.getOutputs()) {
-                            if (output.getParentTransaction() == null) {
-                                log.warn("Skip it. Output {} has not parent transaction.", output);
-                                continue;
-                            }
-                            if (!output.getAddress().equalsIgnoreCase(subscription.getAddress())) {
-                                continue;
-                            }
-
-                            eventPublisher.publish(new SubscriptionPaymentEvent(
-                                    event.getNetworkType(),
-                                    tx,
-                                    output.getValue(),
-                                    currencyByNetwork.get(event.getNetworkType()),
-                                    subscription,
-                                    true
-                            ));
-                        }
-
-                        BigInteger sentValue = BigInteger.ZERO;
+                    for (WrapperTransaction tx : transactions) {
+                        BigInteger inputValue = BigInteger.ZERO;
                         for (WrapperInput input : tx.getInputs()) {
                             if (input.getParentTransaction() == null) {
                                 log.warn("Skip it. Input {} has not parent transaction.", input);
@@ -89,16 +70,56 @@ public class BtcTcrPaymentMonitor {
                                 continue;
                             }
 
-                            sentValue = sentValue.add(input.getValue());
+                            inputValue = inputValue.add(input.getValue());
                         }
 
-                        if (!sentValue.equals(BigInteger.ZERO)) {
-                            eventPublisher.publish(new SubscriptionPaymentEvent(
-                                    event.getNetworkType(),
-                                    tx,
-                                    sentValue.negate(),
-                                    currencyByNetwork.get(event.getNetworkType()),
+                        BigInteger outputValue = BigInteger.ZERO;
+                        for (WrapperOutput output : tx.getOutputs()) {
+                            if (output.getParentTransaction() == null) {
+                                log.warn("Skip it. Output {} has not parent transaction.", output);
+                                continue;
+                            }
+                            if (!output.getAddress().equalsIgnoreCase(subscription.getAddress())) {
+                                continue;
+                            }
+
+                            outputValue = outputValue.add(output.getValue());
+                        }
+
+                        // write-off
+                        if (!inputValue.equals(BigInteger.ZERO)) {
+                            BigInteger amount = inputValue.subtract(outputValue).subtract(tx.getFee());
+
+                            eventPublisher.publish(new PaymentEvent(
                                     subscription,
+                                    event.getNetworkType(),
+                                    event.getBlock(),
+                                    tx,
+                                    subscription.getAddress(),
+                                    null,
+                                    amount,
+                                    tx.getFee(),
+                                    null,
+                                    currencyByNetwork.get(event.getNetworkType()),
+                                    null,
+                                    true
+                            ));
+                        }
+
+                        // replenishment
+                        if (!outputValue.equals(BigInteger.ZERO) && inputValue.equals(BigInteger.ZERO)) {
+                            eventPublisher.publish(new PaymentEvent(
+                                    subscription,
+                                    event.getNetworkType(),
+                                    event.getBlock(),
+                                    tx,
+                                    null,
+                                    subscription.getAddress(),
+                                    outputValue,
+                                    tx.getFee(),
+                                    null,
+                                    currencyByNetwork.get(event.getNetworkType()),
+                                    null,
                                     true
                             ));
                         }
