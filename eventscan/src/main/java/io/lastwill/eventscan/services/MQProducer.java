@@ -34,6 +34,7 @@ public class MQProducer {
     @PostConstruct
     protected void init() {
         properties.setExpiration(ttl);
+        properties.setContentType("application/json");
     }
 
     public synchronized void send(String queueName, BaseMessage message) {

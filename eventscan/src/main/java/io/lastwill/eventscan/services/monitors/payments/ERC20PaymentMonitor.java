@@ -42,7 +42,7 @@ public class ERC20PaymentMonitor {
         }
 
         subscriptionRepository
-                .findSubscribedByAddressesListAndNetwork(addresses, event.getNetworkType())
+                .findSubscribedByTokenAddress(addresses, event.getNetworkType())
                 .forEach(subscription -> {
                     List<WrapperTransaction> transactions = event.getTransactionsByAddress().get(subscription.getTokenAddress());
                     handle(event.getBlock(), transactions, subscription, event.getNetworkType());

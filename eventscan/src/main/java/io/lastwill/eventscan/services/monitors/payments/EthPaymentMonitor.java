@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -52,28 +51,34 @@ public class EthPaymentMonitor {
                 continue;
             }
 
-            transactions.forEach(transaction -> {
-                if (Stream.of(transaction.getSingleInputAddress(), transaction.getSingleOutputAddress())
-                        .anyMatch(address -> subscription.getAddress().equalsIgnoreCase(address))) {
-                    transactionProvider.getTransactionReceiptAsync(event.getNetworkType(), transaction)
-                            .thenAccept(receipt -> {
-                                eventPublisher.publish(new PaymentEvent(
-                                        subscription,
-                                        event.getNetworkType(),
-                                        event.getBlock(),
-                                        transaction,
-                                        transaction.getSingleInputAddress(),
-                                        transaction.getSingleOutputAddress(),
-                                        getAmountFor(transaction.getSingleOutputAddress(), transaction),
-                                        null,
-                                        null,
-                                        "ETH",
-                                        null,
-                                        receipt.isSuccess()
-                                ));
-                            });
-                }
-            });
+            transactions
+                    .stream()
+                    .filter(transaction -> subscription.getAddress().equalsIgnoreCase(transaction.getSingleInputAddress())
+                            || subscription.getAddress().equalsIgnoreCase(transaction.getSingleOutputAddress()))
+                    .forEach(transaction -> {
+                        transactionProvider.getTransactionReceiptAsync(event.getNetworkType(), transaction)
+                                .thenAccept(receipt -> {
+                                    BigInteger amount = getAmountFor(transaction.getSingleOutputAddress(), transaction);
+                                    if (amount.equals(BigInteger.ZERO)) {
+                                        return;
+                                    }
+
+                                    eventPublisher.publish(new PaymentEvent(
+                                            subscription,
+                                            event.getNetworkType(),
+                                            event.getBlock(),
+                                            transaction,
+                                            transaction.getSingleInputAddress(),
+                                            transaction.getSingleOutputAddress(),
+                                            amount,
+                                            null,
+                                            null,
+                                            "ETH",
+                                            null,
+                                            receipt.isSuccess()
+                                    ));
+                                });
+                    });
         }
     }
 

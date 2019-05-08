@@ -21,6 +21,7 @@ public class PaymentEventDispatcher {
         try {
             producer.send(event.getSubscription().getQueueName(),
                     new PaymentMessage(
+                            event.getSubscription().getClientId(),
                             event.getNetworkType(),
                             event.getBlock().getHash(),
                             event.getTransaction().getHash(),
