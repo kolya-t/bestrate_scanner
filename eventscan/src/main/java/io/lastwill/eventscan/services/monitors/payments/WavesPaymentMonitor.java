@@ -14,6 +14,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Slf4j
@@ -49,7 +50,7 @@ public class WavesPaymentMonitor {
                     transactions.forEach(transaction -> transaction.getOutputs()
                             .stream()
                             .map(output -> (WrapperOutputWaves) output)
-                            .filter(outputWaves -> subscription.getTokenAddress().equalsIgnoreCase(outputWaves.getAssetId()))
+                            .filter(outputWaves -> Objects.equals(subscription.getTokenAddress(), outputWaves.getAssetId()))
                             .filter(o -> subscription.getAddress().equalsIgnoreCase(o.getFrom())
                                     || subscription.getAddress().equalsIgnoreCase(o.getAddress()))
                             .forEach(output -> eventPublisher.publish(new PaymentEvent(
