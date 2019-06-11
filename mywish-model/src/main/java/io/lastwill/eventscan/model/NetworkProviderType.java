@@ -4,4 +4,5 @@ public enum NetworkProviderType {
     WEB3,
     EOS,
     BTC,
+    WAVES
 }

@@ -16,7 +16,6 @@ public class Currency {
     private Long id;
     @Column(nullable = false)
     private String symbol;
-    @Column(nullable = false)
     private String tokenAddress;
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

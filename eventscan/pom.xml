@@ -38,6 +38,11 @@
             <artifactId>blockchain</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>blockchain-waves</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- Runtime -->
         <dependency>
             <groupId>${project.groupId}</groupId>
