@@ -19,7 +19,7 @@ public interface SubscriptionRepository extends CrudRepository<Subscription, Lon
     @Query("select s from Subscription s " +
             "where s.isSubscribed = true " +
             "and s.network = :network " +
-            "and s.address in :addresses")
+            "and lower(s.address) in :addresses")
     List<Subscription> findSubscribedByAddressesListAndNetwork(
             @Param("addresses") Collection<String> addresses,
             @Param("network") NetworkType network
@@ -28,7 +28,7 @@ public interface SubscriptionRepository extends CrudRepository<Subscription, Lon
     @Query("select s from Subscription s " +
             "where s.isSubscribed = true " +
             "and s.network = :network " +
-            "and s.address = :address")
+            "and lower(s.address) = lower(:address)")
     Subscription findSubscribedByAddressAndNetwork(
             @Param("address") String address,
             @Param("network") NetworkType network
@@ -37,7 +37,7 @@ public interface SubscriptionRepository extends CrudRepository<Subscription, Lon
     @Query("select s from Subscription s " +
             "where s.isSubscribed = true " +
             "and s.network = :network " +
-            "and s.tokenAddress in :addresses")
+            "and lower(s.tokenAddress) in :addresses")
     List<Subscription> findSubscribedByTokenAddress(
             @Param("addresses") Collection<String> addresses,
             @Param("network") NetworkType network
