@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
 import org.web3j.protocol.core.methods.response.Transaction;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import rx.Subscription;
 
 import javax.annotation.PostConstruct;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class Web3Network extends WrapperNetwork {
+    private final int TRIES_COUNT = 3;
     private final Web3j web3j;
 
     @Autowired
@@ -92,12 +94,10 @@ public class Web3Network extends WrapperNetwork {
 
     @Override
     public WrapperTransactionReceipt getTxReceipt(WrapperTransaction transaction) throws Exception {
+        TransactionReceipt receipt = tryGetReceipt(transaction.getHash());
         return transactionReceiptBuilder.build(
                 transaction,
-                web3j
-                        .ethGetTransactionReceipt(transaction.getHash())
-                        .send()
-                        .getResult()
+                receipt
         );
     }
 
@@ -124,5 +124,20 @@ public class Web3Network extends WrapperNetwork {
             result.add(transactionBuilder.build(transaction));
         }
         return result;
+    }
+
+    private TransactionReceipt tryGetReceipt(String hash) throws Exception {
+        TransactionReceipt receipt;
+        for (int i = 0; i < TRIES_COUNT; i ++) {
+            receipt = web3j
+                    .ethGetTransactionReceipt(hash)
+                    .send()
+                    .getResult();
+            if (receipt != null) {
+                return receipt;
+            }
+            log.warn("Error on getting receipt for transaction {}, try {}.", hash, i + 1);
+        }
+        throw new Exception("Transaction receipt did not fetched " + hash + " for " + TRIES_COUNT + " trues.");
     }
 }
