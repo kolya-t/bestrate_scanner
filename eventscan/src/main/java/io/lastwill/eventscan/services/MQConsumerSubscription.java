@@ -57,7 +57,7 @@ public class MQConsumerSubscription {
             return;
         }
 
-        subscription.setIsSubscribed(true);
+        subscription.setIsSubscribed(false);
         subscriptionRepository.save(subscription);
         queueBinder.remove(subscription.getQueueName());
         log.info("Removed subscription {}.", message.getId());
