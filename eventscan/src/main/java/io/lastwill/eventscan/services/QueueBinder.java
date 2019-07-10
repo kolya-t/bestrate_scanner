@@ -44,7 +44,7 @@ public class QueueBinder {
     }
 
     public void add(String queueName) {
-        bindings.computeIfAbsent(queueName, s -> new CounterBinding(s))
+        bindings.computeIfAbsent(queueName, CounterBinding::new)
                 .bind(exchange);
     }
 

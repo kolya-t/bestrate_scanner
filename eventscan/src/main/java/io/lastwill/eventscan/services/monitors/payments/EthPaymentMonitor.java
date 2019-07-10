@@ -61,6 +61,8 @@ public class EthPaymentMonitor {
         event.getBlock()
                 .getTransactions()
                 .stream()
+                // skip contract creations
+                .filter(transaction -> transaction.getSingleOutputAddress() != null)
                 .filter(transaction -> subscriptionAddresses.containsKey(transaction.getSingleInputAddress().toLowerCase())
                         || subscriptionAddresses.containsKey(transaction.getSingleOutputAddress().toLowerCase()))
                 .forEach(transaction -> {
