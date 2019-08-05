@@ -26,6 +26,7 @@
         <module>blockchain-eos</module>
         <module>blockchain-btc</module>
         <module>blockchain-waves</module>
+        <module>blockchain-binance</module>
     </modules>
 
     <properties>

@@ -1,9 +1,7 @@
 package io.lastwill.eventscan.services;
 
-import com.sun.javafx.binding.ContentBinding;
 import io.lastwill.eventscan.model.Subscription;
 import io.lastwill.eventscan.repositories.SubscriptionRepository;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
@@ -14,9 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
