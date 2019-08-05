@@ -1,5 +1,6 @@
 package io.lastwill.eventscan.services;
 
+import com.sun.javafx.binding.ContentBinding;
 import io.lastwill.eventscan.model.Subscription;
 import io.lastwill.eventscan.repositories.SubscriptionRepository;
 import lombok.Getter;
@@ -16,12 +17,13 @@ import javax.annotation.PostConstruct;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
 public class QueueBinder {
-    @Getter
-    private final Map<String, Binding> bindings = Collections.synchronizedMap(new HashMap<>());
+    private final ConcurrentHashMap<String, CounterBinding> bindings = new ConcurrentHashMap<>();
 
     @Autowired
     private SubscriptionRepository subscriptionRepository;
@@ -42,29 +44,50 @@ public class QueueBinder {
     }
 
     public void add(String queueName) {
-        if (bindings.containsKey(queueName)) {
-            log.warn("Attempt to add existing binding {}.", queueName);
-            return;
-        }
-
-        Queue queue = new Queue(queueName);
-        Binding binding = BindingBuilder.bind(queue)
-                .to(exchange)
-                .withQueueName();
-        bindings.put(binding.getRoutingKey(), binding);
+        bindings.computeIfAbsent(queueName, CounterBinding::new)
+                .bind(exchange);
     }
 
     public void remove(String queueName) {
-        if (!bindings.containsKey(queueName)) {
+        CounterBinding contentBinding = bindings.get(queueName);
+        if (contentBinding == null) {
             log.error("Attempt to remove not existing binding {}.", queueName);
             return;
         }
-
-        Binding binding = bindings.remove(queueName);
-        rabbitAdmin.removeBinding(binding);
+        contentBinding.unbind(rabbitAdmin);
     }
 
     public boolean isAvailable(String queueName) {
         return bindings.containsKey(queueName);
+    }
+
+    public static class CounterBinding {
+        private final String queueName;
+        private final AtomicInteger counter;
+        private Binding binding;
+
+        public CounterBinding(String queueName) {
+            this.queueName = queueName;
+            this.counter = new AtomicInteger(0);
+        }
+
+        public synchronized void bind(DirectExchange exchange) {
+            if (counter.getAndIncrement() > 0) {
+                return;
+            }
+
+            Queue queue = new Queue(queueName);
+            binding = BindingBuilder.bind(queue)
+                    .to(exchange)
+                    .withQueueName();
+        }
+
+        public synchronized void unbind(RabbitAdmin rabbitAdmin) {
+            if (counter.decrementAndGet() > 0) {
+                return;
+            }
+
+            rabbitAdmin.removeBinding(binding);
+        }
     }
 }

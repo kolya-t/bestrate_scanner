@@ -6,6 +6,7 @@ import io.lastwill.eventscan.model.Subscription;
 import io.lastwill.eventscan.repositories.SubscriptionRepository;
 import io.lastwill.eventscan.services.TransactionProvider;
 import io.mywish.blockchain.WrapperTransaction;
+import io.mywish.blockchain.WrapperTransactionReceipt;
 import io.mywish.scanner.model.NewBlockEvent;
 import io.mywish.scanner.services.EventPublisher;
 import lombok.extern.slf4j.Slf4j;
@@ -14,8 +15,13 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -41,45 +47,59 @@ public class EthPaymentMonitor {
         }
 
         List<Subscription> subscriptions = subscriptionRepository.findSubscribedByAddressesListAndNetwork(addresses, event.getNetworkType());
-        for (Subscription subscription : subscriptions) {
-            final List<WrapperTransaction> transactions = event.getTransactionsByAddress().get(
-                    subscription.getAddress().toLowerCase()
-            );
-
-            if (transactions == null) {
-                log.error("User {} received from DB, but was not found in transaction list (block {}).", subscription, event.getBlock().getNumber());
-                continue;
-            }
-
-            transactions
-                    .stream()
-                    .filter(transaction -> subscription.getAddress().equalsIgnoreCase(transaction.getSingleInputAddress())
-                            || subscription.getAddress().equalsIgnoreCase(transaction.getSingleOutputAddress()))
-                    .forEach(transaction -> {
-                        transactionProvider.getTransactionReceiptAsync(event.getNetworkType(), transaction)
-                                .thenAccept(receipt -> {
-                                    BigInteger amount = getAmountFor(transaction.getSingleOutputAddress(), transaction);
-                                    if (amount.equals(BigInteger.ZERO)) {
-                                        return;
-                                    }
-
-                                    eventPublisher.publish(new PaymentEvent(
-                                            subscription,
-                                            event.getNetworkType(),
-                                            event.getBlock(),
-                                            transaction,
-                                            transaction.getSingleInputAddress(),
-                                            transaction.getSingleOutputAddress(),
-                                            amount,
-                                            null,
-                                            null,
-                                            "ETH",
-                                            null,
-                                            receipt.isSuccess()
-                                    ));
-                                });
-                    });
+        if (subscriptions.isEmpty()) {
+            return;
         }
+
+        Map<String, List<Subscription>> subscriptionAddresses = subscriptions
+                .stream()
+                .collect(Collectors.groupingBy(
+                        subscription -> subscription.getAddress().toLowerCase(),
+                        Collectors.mapping(Function.identity(), Collectors.toList())
+                ));
+
+        event.getBlock()
+                .getTransactions()
+                .stream()
+                // skip contract creations
+                .filter(transaction -> transaction.getSingleOutputAddress() != null)
+                .filter(transaction -> subscriptionAddresses.containsKey(transaction.getSingleInputAddress().toLowerCase())
+                        || subscriptionAddresses.containsKey(transaction.getSingleOutputAddress().toLowerCase()))
+                .forEach(transaction -> {
+                    WrapperTransactionReceipt receipt;
+                    try {
+                        receipt = transactionProvider.getTransactionReceipt(event.getNetworkType(), transaction);
+                    }
+                    catch (Exception e) {
+                        log.error("Failed to get transaction receipt.", e);
+                        return;
+                    }
+                    Stream.concat(
+                            subscriptionAddresses.getOrDefault(transaction.getSingleInputAddress().toLowerCase(), Collections.emptyList()).stream(),
+                            subscriptionAddresses.getOrDefault(transaction.getSingleOutputAddress().toLowerCase(), Collections.emptyList()).stream()
+                    )
+                            .forEach(subscription -> {
+                                BigInteger amount = getAmountFor(transaction.getSingleOutputAddress(), transaction);
+                                if (amount.equals(BigInteger.ZERO)) {
+                                    return;
+                                }
+
+                                eventPublisher.publish(new PaymentEvent(
+                                        subscription,
+                                        event.getNetworkType(),
+                                        event.getBlock(),
+                                        transaction,
+                                        transaction.getSingleInputAddress(),
+                                        transaction.getSingleOutputAddress(),
+                                        amount,
+                                        null,
+                                        null,
+                                        "ETH",
+                                        null,
+                                        receipt.isSuccess()
+                                ));
+                            });
+                });
     }
 
     private BigInteger getAmountFor(final String address, final WrapperTransaction transaction) {
