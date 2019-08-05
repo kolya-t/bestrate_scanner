@@ -1,8 +1,7 @@
 package io.mywish.binance.blockchain.services;
 
+import io.mywish.binance.blockchain.model.WrapperOutputBinance;
 import io.mywish.blockchain.WrapperBlock;
-import io.mywish.blockchain.WrapperInput;
-import io.mywish.blockchain.WrapperOutput;
 import io.mywish.blockchain.WrapperTransaction;
 import io.mywish.scanner.model.NewBlockEvent;
 import io.mywish.scanner.services.LastBlockPersister;
@@ -11,10 +10,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 
 @Slf4j
 public class BinanceScanner extends ScannerPolling {
@@ -38,11 +38,11 @@ public class BinanceScanner extends ScannerPolling {
             return;
         }
         block.getTransactions().forEach(tx -> {
-            Stream.concat(
-                    tx.getInputs().stream()
-                            .map(WrapperInput::getAddress),
-                    tx.getOutputs().stream()
-                            .map(WrapperOutput::getAddress))
+            tx.getOutputs()
+                    .stream()
+                    .map(output -> (WrapperOutputBinance) output)
+                    .map(output -> Arrays.asList(output.getFrom(), output.getAddress()))
+                    .flatMap(Collection::stream)
                     .filter(address -> !contains(addressTransactions, address, tx))
                     .forEach(address -> addressTransactions.add(address, tx));
         });
