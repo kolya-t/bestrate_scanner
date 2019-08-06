@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -33,7 +34,12 @@ public class WavesPaymentMonitor {
             return;
         }
 
-        Set<String> addresses = newBlockEvent.getTransactionsByAddress().keySet();
+        Set<String> addresses = newBlockEvent
+                .getTransactionsByAddress()
+                .keySet()
+                .stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
         if (addresses.isEmpty()) {
             return;
         }

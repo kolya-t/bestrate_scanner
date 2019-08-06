@@ -1,13 +1,13 @@
 package io.mywish.waves.blockchain;
 
-import com.wavesplatform.wavesj.Account;
-import com.wavesplatform.wavesj.Node;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.lastwill.eventscan.model.NetworkType;
 import io.lastwill.eventscan.repositories.LastBlockRepository;
 import io.mywish.scanner.services.LastBlockDbPersister;
 import io.mywish.scanner.services.LastBlockPersister;
 import io.mywish.waves.blockchain.services.WavesNetwork;
 import io.mywish.waves.blockchain.services.WavesScanner;
+import io.mywish.wavescli4j.service.WavesClientImpl;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,8 +17,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import java.net.URISyntaxException;
-
 @Configuration
 @ComponentScan
 public class WavesBCModule {
@@ -26,11 +24,16 @@ public class WavesBCModule {
     @Bean(name = NetworkType.WAVES_MAINNET_VALUE)
     public WavesNetwork wavesNetMain(
             final CloseableHttpClient httpClient,
-            final @Value("${etherscanner.waves.rpc-url.mainnet}") String rpcUrl
-    ) throws URISyntaxException {
+            final @Value("${etherscanner.waves.rpc-url.mainnet}") String rpcUrl,
+            ObjectMapper objectMapper
+    ) {
         return new WavesNetwork(
                 NetworkType.WAVES_MAINNET,
-                new Node(rpcUrl, Account.MAINNET, httpClient)
+                new WavesClientImpl(
+                        httpClient,
+                        rpcUrl,
+                        objectMapper
+                )
         );
     }
 
@@ -38,11 +41,16 @@ public class WavesBCModule {
     @Bean(name = NetworkType.WAVES_TESTNET_VALUE)
     public WavesNetwork wavesNetTest(
             final CloseableHttpClient httpClient,
-            final @Value("${etherscanner.waves.rpc-url.testnet}") String rpcUrl
-    ) throws URISyntaxException {
+            final @Value("${etherscanner.waves.rpc-url.testnet}") String rpcUrl,
+            final ObjectMapper objectMapper
+    ) {
         return new WavesNetwork(
                 NetworkType.WAVES_TESTNET,
-                new Node(rpcUrl, Account.TESTNET, httpClient)
+                new WavesClientImpl(
+                        httpClient,
+                        rpcUrl,
+                        objectMapper
+                )
         );
     }
 
@@ -52,13 +60,15 @@ public class WavesBCModule {
             final @Qualifier(NetworkType.WAVES_MAINNET_VALUE) WavesNetwork network,
             final @Qualifier("wavesMainnetLastBlockPersister") LastBlockPersister lastBlockPersister,
             final @Value("${etherscanner.waves.polling-interval-ms}") Long pollingInterval,
-            final @Value("${etherscanner.waves.commit-chain-length}") Integer commitmentChainLength
+            final @Value("${etherscanner.waves.commit-chain-length}") Integer commitmentChainLength,
+            final @Value("${etherscanner.waves.reach-interval-ms}") Long reachInterval
     ) {
         return new WavesScanner(
                 network,
                 lastBlockPersister,
                 pollingInterval,
-                commitmentChainLength
+                commitmentChainLength,
+                reachInterval
         );
     }
 

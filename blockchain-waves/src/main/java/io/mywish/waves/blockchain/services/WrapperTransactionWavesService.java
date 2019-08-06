@@ -1,47 +1,66 @@
 package io.mywish.waves.blockchain.services;
 
-import com.wavesplatform.wavesj.Transaction;
-import com.wavesplatform.wavesj.transactions.MassTransferTransaction;
-import com.wavesplatform.wavesj.transactions.TransferTransaction;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.mywish.blockchain.WrapperInput;
 import io.mywish.blockchain.WrapperOutput;
 import io.mywish.blockchain.service.WrapperTransactionService;
+import io.mywish.waves.blockchain.model.WrapperOutputWaves;
 import io.mywish.waves.blockchain.model.WrapperTransactionWaves;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
-public class WrapperTransactionWavesService implements WrapperTransactionService<Transaction> {
-    @Autowired
-    private WrapperOutputWavesService outputBuilder;
-
+public class WrapperTransactionWavesService implements WrapperTransactionService<JsonNode> {
     @Override
-    public WrapperTransactionWaves build(Transaction transaction) {
-        String hash = transaction.getId().getBase58String();
-        BigInteger fee = BigInteger.valueOf(transaction.getFee());
+    public WrapperTransactionWaves build(JsonNode transaction) {
+        String hash = transaction.get("id").asText();
+        BigInteger fee = transaction.get("fee").bigIntegerValue();
 
         List<WrapperInput> inputs = Collections.emptyList();
         List<WrapperOutput> outputs;
 
-        if (transaction instanceof TransferTransaction) {
-            TransferTransaction transferTx = (TransferTransaction) transaction;
-            outputs = Collections.singletonList(outputBuilder.build(transferTx));
-        } else if (transaction instanceof MassTransferTransaction) {
-            MassTransferTransaction massTransferTx = (MassTransferTransaction) transaction;
-            outputs = massTransferTx
-                    .getTransfers()
-                    .stream()
-                    .map(transfer -> outputBuilder.build(massTransferTx, transfer))
-                    .collect(Collectors.toList());
+        int type = transaction.get("type").asInt();
+        // transfer
+        String sender = transaction.get("sender").asText();
+        if (type == 4) {
+            outputs = Collections.singletonList(new WrapperOutputWaves(
+                    hash,
+                    sender,
+                    transaction.get("recipient").asText(),
+                    transaction.get("amount").bigIntegerValue(),
+                    transaction.get("assetId").asText()
+            ));
+        }
+        // mass transfer
+        else if (type == 11) {
+            String assetId = transaction.get("assetId").asText();
+            int transferCount = transaction.get("transferCount").intValue();
+            outputs = new ArrayList<>(transferCount);
+            ArrayNode transfers = (ArrayNode) transaction.get("transfers");
+            for (JsonNode transfer : transfers) {
+                outputs.add(new WrapperOutputWaves(
+                        hash,
+                        sender,
+                        transfer.get("recipient").asText(),
+                        transfer.get("amount").bigIntegerValue(),
+                        assetId
+                ));
+            }
+
         } else {
             outputs = Collections.emptyList();
         }
 
-        return new WrapperTransactionWaves(hash, inputs, outputs, fee);
+        return new WrapperTransactionWaves(
+                hash,
+                inputs,
+                outputs,
+                fee
+        );
     }
 }
