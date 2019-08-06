@@ -12,7 +12,9 @@ public enum NetworkType {
     EOS_TESTNET(NetworkProviderType.EOS),
     TECRA_MAINNET(NetworkProviderType.BTC),
     WAVES_MAINNET(NetworkProviderType.WAVES),
-    WAVES_TESTNET(NetworkProviderType.WAVES);
+    WAVES_TESTNET(NetworkProviderType.WAVES),
+    BINANCE_MAINNET(NetworkProviderType.BINANCE),
+    BINANCE_TESTNET(NetworkProviderType.BINANCE);
 
     public final static String ETHEREUM_MAINNET_VALUE = "ETHEREUM_MAINNET";
     public final static String ETHEREUM_ROPSTEN_VALUE = "ETHEREUM_ROPSTEN";
@@ -23,6 +25,8 @@ public enum NetworkType {
     public final static String TECRA_MAINNET_VALUE = "TECRA_MAINNET";
     public final static String WAVES_MAINNET_VALUE = "WAVES_MAINNET";
     public final static String WAVES_TESTNET_VALUE = "WAVES_TESTNET";
+    public final static String BINANCE_MAINNET_VALUE = "BINANCE_MAINNET";
+    public final static String BINANCE_TESTNET_VALUE = "BINANCE_TESTNET";
 
     private final NetworkProviderType networkProviderType;
 
