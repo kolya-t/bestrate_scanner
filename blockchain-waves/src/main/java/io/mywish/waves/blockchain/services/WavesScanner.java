@@ -1,22 +1,26 @@
 package io.mywish.waves.blockchain.services;
 
 import io.mywish.blockchain.WrapperBlock;
-import io.mywish.blockchain.WrapperInput;
-import io.mywish.blockchain.WrapperOutput;
 import io.mywish.blockchain.WrapperTransaction;
 import io.mywish.scanner.model.NewBlockEvent;
 import io.mywish.scanner.services.LastBlockPersister;
 import io.mywish.scanner.services.ScannerPolling;
+import io.mywish.waves.blockchain.model.WrapperOutputWaves;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Stream;
 
 @Slf4j
 public class WavesScanner extends ScannerPolling {
+    public WavesScanner(WavesNetwork network, LastBlockPersister lastBlockPersister, Long pollingInterval, Integer commitmentChainLength, Long reachInterval) {
+        super(network, lastBlockPersister, pollingInterval, commitmentChainLength, reachInterval);
+    }
+
     public WavesScanner(WavesNetwork network, LastBlockPersister lastBlockPersister, Long pollingInterval, Integer commitmentChainLength) {
         super(network, lastBlockPersister, pollingInterval, commitmentChainLength);
     }
@@ -32,11 +36,11 @@ public class WavesScanner extends ScannerPolling {
             return;
         }
         block.getTransactions().forEach(tx -> {
-            Stream.concat(
-                    tx.getInputs().stream()
-                            .map(WrapperInput::getAddress),
-                    tx.getOutputs().stream()
-                            .map(WrapperOutput::getAddress))
+            tx.getOutputs()
+                    .stream()
+                    .map(output -> (WrapperOutputWaves) output)
+                    .map(output -> Arrays.asList(output.getFrom(), output.getAddress()))
+                    .flatMap(Collection::stream)
                     .filter(address -> !contains(addressTransactions, address, tx))
                     .forEach(address -> addressTransactions.add(address, tx));
         });
