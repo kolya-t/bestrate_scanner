@@ -48,6 +48,11 @@
             <artifactId>blockchain-binance</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>blockchain-neo</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- Runtime -->
         <dependency>
             <groupId>${project.groupId}</groupId>

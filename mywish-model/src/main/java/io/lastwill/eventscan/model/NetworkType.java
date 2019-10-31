@@ -14,7 +14,9 @@ public enum NetworkType {
     WAVES_MAINNET(NetworkProviderType.WAVES),
     WAVES_TESTNET(NetworkProviderType.WAVES),
     BINANCE_MAINNET(NetworkProviderType.BINANCE),
-    BINANCE_TESTNET(NetworkProviderType.BINANCE);
+    BINANCE_TESTNET(NetworkProviderType.BINANCE),
+    NEO_MAINNET(NetworkProviderType.NEO),
+    NEO_TESTNET(NetworkProviderType.NEO);
 
     public final static String ETHEREUM_MAINNET_VALUE = "ETHEREUM_MAINNET";
     public final static String ETHEREUM_ROPSTEN_VALUE = "ETHEREUM_ROPSTEN";
@@ -27,6 +29,8 @@ public enum NetworkType {
     public final static String WAVES_TESTNET_VALUE = "WAVES_TESTNET";
     public final static String BINANCE_MAINNET_VALUE = "BINANCE_MAINNET";
     public final static String BINANCE_TESTNET_VALUE = "BINANCE_TESTNET";
+    public final static String NEO_MAINNET_VALUE = "NEO_MAINNET";
+    public final static String NEO_TESTNET_VALUE = "NEO_TESTNET";
 
     private final NetworkProviderType networkProviderType;
 
