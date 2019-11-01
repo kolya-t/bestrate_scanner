@@ -28,6 +28,8 @@
         <module>blockchain-btc</module>
         <module>blockchain-waves</module>
         <module>blockchain-binance</module>
+        <module>tron-cli4j</module>
+        <module>blockchain-tron</module>
     </modules>
 
     <properties>
