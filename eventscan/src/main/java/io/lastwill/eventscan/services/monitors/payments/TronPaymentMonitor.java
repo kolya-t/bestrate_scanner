@@ -87,7 +87,7 @@ public class TronPaymentMonitor {
     }
 
     private boolean isHexadecimalAddress(String address) {
-        return address.substring(2).equalsIgnoreCase("41");
+        return address.substring(0, 2).equalsIgnoreCase("41");
     }
 
     private String convertAddress(String address) {
