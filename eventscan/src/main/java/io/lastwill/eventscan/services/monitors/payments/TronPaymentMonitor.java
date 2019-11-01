@@ -99,6 +99,6 @@ public class TronPaymentMonitor {
     }
 
     private boolean isAddressesEquals(String first, String second) {
-        return convertAddress(first).equals(second);
+        return convertAddress(first).equals(convertAddress(second));
     }
 }
