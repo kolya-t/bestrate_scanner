@@ -42,4 +42,11 @@ public interface SubscriptionRepository extends CrudRepository<Subscription, Lon
             @Param("addresses") Collection<String> addresses,
             @Param("network") NetworkType network
     );
+
+    @Query("select s from Subscription s " +
+            "where s.isSubscribed = true " +
+            "and s.network = :network ")
+    List<Subscription> findSubscribedByNetwork(
+            @Param("network") NetworkType network
+    );
 }
