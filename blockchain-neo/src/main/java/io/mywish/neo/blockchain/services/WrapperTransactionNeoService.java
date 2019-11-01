@@ -4,13 +4,18 @@ import io.mywish.blockchain.WrapperInput;
 import io.mywish.blockchain.WrapperOutput;
 import io.mywish.blockchain.WrapperTransaction;
 import io.mywish.blockchain.service.WrapperTransactionService;
+import io.mywish.neo.blockchain.model.Asset;
+import io.mywish.neo.blockchain.model.WrapperInputNeo;
+import io.mywish.neo.blockchain.model.WrapperOutputNeo;
 import io.mywish.neo.blockchain.model.WrapperTransactionNeo;
 import io.mywish.neocli4j.Ripemd160;
 import io.mywish.neocli4j.Transaction;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.mywish.neocli4j.TransactionInput;
+import io.mywish.neocli4j.TransactionOutput;
 import org.springframework.stereotype.Component;
 
 import javax.xml.bind.DatatypeConverter;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -22,12 +27,6 @@ import java.util.stream.Collectors;
 
 @Component
 public class WrapperTransactionNeoService implements WrapperTransactionService<Transaction> {
-    @Autowired
-    private WrapperInputNeoService inputBuilder;
-
-    @Autowired
-    private WrapperOutputNeoService outputBuilder;
-
     private final MessageDigest digest;
 
     public WrapperTransactionNeoService() throws NoSuchAlgorithmException {
@@ -40,12 +39,12 @@ public class WrapperTransactionNeoService implements WrapperTransactionService<T
         List<WrapperInput> inputs = transaction
                 .getInputs()
                 .stream()
-                .map(input -> inputBuilder.build(transaction, input))
+                .map(input -> buildInput(transaction, input))
                 .collect(Collectors.toList());
         List<WrapperOutput> outputs = transaction
                 .getOutputs()
                 .stream()
-                .map(output -> outputBuilder.build(transaction, output))
+                .map(output -> buildOutput(transaction, output))
                 .collect(Collectors.toList());
         List<String> contracts = extractContracts(transaction.getScript());
         boolean contractCreation = contracts.isEmpty() && transaction.getType() == Transaction.Type.InvocationTransaction;
@@ -56,7 +55,7 @@ public class WrapperTransactionNeoService implements WrapperTransactionService<T
                 contractCreation,
                 transaction.getType(),
                 contracts,
-                BigInteger.ZERO
+                getBigIntegerValueFromAsset(transaction.getFee(), Asset.GAS)
         );
         if (contractCreation) {
             String created = extractCreatedContract(transaction.getScript());
@@ -67,6 +66,42 @@ public class WrapperTransactionNeoService implements WrapperTransactionService<T
         return res;
     }
 
+    private WrapperInputNeo buildInput(Transaction transaction, TransactionInput input) {
+        TransactionOutput connectedOutput = input.getConnectedOutput();
+        Asset asset = Asset.getAssetById(connectedOutput.getAsset());
+        BigInteger value = getBigIntegerValueFromAsset(connectedOutput.getValue(), asset);
+        return new WrapperInputNeo(
+                transaction.getHash(),
+                connectedOutput.getAddress(),
+                value,
+                asset
+        );
+    }
+
+    private WrapperOutputNeo buildOutput(Transaction transaction, TransactionOutput output) {
+        Asset asset = Asset.getAssetById(output.getAsset());
+        BigInteger value = getBigIntegerValueFromAsset(output.getValue(), asset);
+        return new WrapperOutputNeo(
+                transaction.getHash(),
+                output.getIndex(),
+                output.getAddress(),
+                value,
+                asset,
+                new byte[0]
+        );
+    }
+
+    private BigInteger getBigIntegerValueFromAsset(BigDecimal value, Asset asset) {
+        switch (asset) {
+            case NEO:
+                return value.toBigInteger();
+            case GAS:
+                return value.multiply(new BigDecimal(100000000L)).toBigInteger();
+            default:
+                throw new IllegalArgumentException("Unknown asset");
+        }
+    }
+
     private List<String> extractContracts(final String scriptHex) {
         if (scriptHex == null) {
             return Collections.emptyList();
@@ -74,19 +109,19 @@ public class WrapperTransactionNeoService implements WrapperTransactionService<T
         List<String> contracts = new ArrayList<>();
         byte[] script = DatatypeConverter.parseHexBinary(scriptHex);
         for (long i = 0; i < script.length; i++) {
-            byte opcode = script[(int)i];
+            byte opcode = script[(int) i];
             if (opcode >= 0x01 && opcode <= 0x4B) {
                 i += opcode;
                 continue;
             }
             if (opcode >= 0x4C && opcode <= 0x4E) {
                 i++;
-                int toRead = (int)Math.pow(2, opcode - 0x4C) & 0xFF;
+                int toRead = (int) Math.pow(2, opcode - 0x4C) & 0xFF;
                 i += toRead;
                 long count = 0;
                 for (int j = 0; j < toRead; j++) {
                     if (i - j - 1 >= script.length) continue;
-                    count = (count << 8) + (script[(int)(i - j - 1)] & 0xFF);
+                    count = (count << 8) + (script[(int) (i - j - 1)] & 0xFF);
                 }
                 i += count;
                 continue;
@@ -97,7 +132,7 @@ public class WrapperTransactionNeoService implements WrapperTransactionService<T
             }
             if (opcode >= 0x67 && opcode <= 0x69) {
                 i++;
-                byte[] addressBytes = Arrays.copyOfRange(script, (int)i, (int)(i + 20));
+                byte[] addressBytes = Arrays.copyOfRange(script, (int) i, (int) (i + 20));
                 byte[] address = new byte[addressBytes.length];
                 for (int j = 0; j < addressBytes.length; j++) {
                     address[j] = addressBytes[addressBytes.length - j - 1];

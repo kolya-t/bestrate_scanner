@@ -3,10 +3,8 @@ package io.mywish.neocli4j;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
-import javax.xml.bind.DatatypeConverter;
-import java.security.MessageDigest;
+import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Getter
@@ -35,6 +33,9 @@ public class Transaction {
     private List<String> contracts;
 
     private String script;
+
+    @JsonProperty("net_fee")
+    private BigDecimal fee;
 
     public Transaction() {
         this.contracts = new ArrayList<>();

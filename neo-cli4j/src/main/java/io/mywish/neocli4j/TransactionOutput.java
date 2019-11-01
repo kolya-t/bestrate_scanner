@@ -3,7 +3,7 @@ package io.mywish.neocli4j;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
-import java.math.BigInteger;
+import java.math.BigDecimal;
 
 @Getter
 public class TransactionOutput {
@@ -11,9 +11,5 @@ public class TransactionOutput {
     private Integer index;
     private String address;
     private String asset;
-    private BigInteger value;
-    @JsonProperty("value")
-    private void setValue(Double value) {
-        this.value = BigInteger.valueOf(value.longValue());
-    }
+    private BigDecimal value;
 }
