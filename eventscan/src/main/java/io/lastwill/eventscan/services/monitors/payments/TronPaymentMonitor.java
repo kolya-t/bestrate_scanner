@@ -53,7 +53,6 @@ public class TronPaymentMonitor {
                     transactions.forEach(transaction -> transaction.getOutputs()
                             .stream()
                             .map(output -> (WrapperOutputTron) output)
-                            .filter(o -> subscription.getAddress().equalsIgnoreCase(o.getAddress()))
                             .forEach(output -> eventPublisher.publish(new PaymentEvent(
                                     subscription,
                                     networkType,
